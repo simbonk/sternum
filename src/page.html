@@ -393,7 +393,7 @@ const EXPORT_ABOUT = {
     rmssd: 'HRV: root mean square of successive beat-interval differences, ms (clean beats only)', sdnn: 'standard deviation of clean beat intervals, ms', pnn50: '% of successive intervals differing by more than 50 ms',
     irregPct: '% of consecutive beat pairs differing by more than 12% (breathing-linked swings count too)', ectopic: 'count of early beats followed by a longer pause', pauses: 'count of beat gaps over 2 s',
     beats: 'beats detected', coverage: 'fraction of the recording covered by clean beats (0-1)',
-    br: 'breathing rate from chest tilt, breaths/min', brSound: 'breathing rate from breath sounds, breaths/min (null if not heard clearly)', brCV: 'breath-to-breath interval variation, %',
+    br: 'breathing rate, breaths/min (source in brFrom: motion = chest tilt, sound = breath sounds, heart = estimated from the breath-linked rise and fall of heart rate)', brHeart: 'breathing rate estimated from heart rate rise and fall, breaths/min', brHeartQ: 'confidence of brHeart, 0-1', afLike: 'true if beat gaps were large and random (atrial-fibrillation-like, Dash 2009 test)', nrmssd: 'RMSSD / mean beat interval', tpr: 'turning point ratio of beat intervals (random ~0.67, breathing-driven ~0.3)', rrEntropy: 'Shannon entropy of beat intervals, 0-1', brSound: 'breathing rate from breath sounds, breaths/min (null if not heard clearly)', brCV: 'breath-to-breath interval variation, %',
     breathPauseS: 'longest gap without breathing, s (0 = none over 12 s)', rsa: 'breath-linked heart rate swing: median max-min heart rate within a breath, bpm',
     s1s2: 'time from first to second heart sound, ms (approximates systole; null if heart sounds not heard)', s2s1: 'S2/S1 loudness ratio', beatAmp: 'peak-to-peak size of the average chest-motion beat (depends on phone placement)'
   },
@@ -589,7 +589,7 @@ function renderResult(sess, unsaved) {
   const flags = flagsFor(sess, B), P = plainEnglish(sess, B);
   const srcNote = sess.hrSource === 'sound' ? 'Heart rate from heart sounds' : 'Heart rate from chest motion';
   const agree = sess.agree === true ? '; motion and sound agree' : '';
-  const brS = M.brSound, brNote = M.brFrom === 'sound' ? 'Breathing rate from breath sounds; chest movement was too faint to track' : Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
+  const brS = M.brSound, brNote = M.brFrom === 'sound' ? 'Breathing rate from breath sounds; chest movement was too faint to track' : M.brFrom === 'heart' ? 'Chest movement was too faint to track, so breathing rate is estimated from how your heart rate rises and falls with each breath. Treat it as a rough figure' : Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
   const el = $('#result-panel'); el.hidden = false;
   S.charts = {};
   el.innerHTML = `

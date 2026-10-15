@@ -352,6 +352,17 @@ const DSP = (() => {
     return out.map((h, i) => ({ t: h.t, v: median(out.slice(Math.max(0, i - 1), i + 2).map(o => o.v)) }));
   }
 
+  // breathing from the heart itself: heart rate rises on each in-breath and falls on each out-breath
+  function breathFromHR(ihr) {
+    if (!ihr || ihr.length < 30) return null;
+    const fs = 4, t = ihr.map(h => h.t), v = ihr.map(h => h.v);
+    const x = resample(t, v, fs, t[0], t[t.length - 1]);
+    if (x.length < 30 * fs) return null;
+    const bp = bandpass(x, fs, 0.07, 0.5);
+    const p = period(bp, 2 * fs, 15 * fs);
+    return Number.isFinite(p.lag) ? { br: 60 * fs / p.lag, q: p.r } : null;
+  }
+
   /* rec: { motion: { t:[s], ax,ay,az, gx,gy,gz, tx,ty,tz (tilt/gravity, optional) }, audio: { samples, sr } } */
   function analyze(rec) {
     const res = { metrics: {}, quality: {}, notes: [] };
@@ -408,7 +419,8 @@ const DSP = (() => {
       const br = bsig ? breathing(bsig, FS, r.t, ihr, bsnd && bsnd.t) : null;
       const artifactS = Math.max(...envs.map(e => e.artifact));
       const cons = consistency(main.bp, beats, FS, 0.15, 0.45);
-      mot = { p, r, tp, br, comb, dur, artifactS, mainCh: main.k, ihr, cons };
+      const brHR = breathFromHR(ihr);
+      mot = { p, r, tp, br, brHR, comb, dur, artifactS, mainCh: main.k, ihr, cons };
       res.quality.motion = round(mot.cons, 2);
       res.quality.breath = br ? round(br.q, 2) : null;
       res.durationS = round(dur, 1);
@@ -448,9 +460,14 @@ const DSP = (() => {
     M.beats = r.beats; M.coverage = round(r.coverage, 2);
     if (bsnd && Number.isFinite(bsnd.br)) M.brSound = round(bsnd.br, 1);
     // chest tilt is the main breathing source; a weaker tilt signal still counts when breath sounds agree with it
+    const hb = mot && mot.brHR && mot.brHR.q >= 0.4 ? mot.brHR : null;
+    if (hb) { M.brHeart = round(hb.br, 1); M.brHeartQ = round(hb.q, 2); }
     const soundOk = Number.isFinite(M.brSound), tiltBr = mot && mot.br;
-    if (tiltBr && (tiltBr.q >= 0.4 || (tiltBr.q >= 0.2 && soundOk && Math.abs(tiltBr.br - M.brSound) <= 2))) { M.br = round(tiltBr.br, 1); M.brCV = round(tiltBr.brCV, 1); M.breathPauseS = round(tiltBr.pauseS, 0); M.rsa = round(tiltBr.rsa, 1); M.brFrom = 'motion'; }
+    const confirmed = v => (soundOk && Math.abs(v - M.brSound) <= 2) || (hb && Math.abs(v - hb.br) <= 2);
+    if (tiltBr && (tiltBr.q >= 0.4 || (tiltBr.q >= 0.2 && confirmed(tiltBr.br)))) { M.br = round(tiltBr.br, 1); M.brCV = round(tiltBr.brCV, 1); M.breathPauseS = round(tiltBr.pauseS, 0); M.rsa = round(tiltBr.rsa, 1); M.brFrom = 'motion'; }
     else if (soundOk) { M.br = M.brSound; M.brFrom = 'sound'; }
+    // last resort, and only for a regular rhythm: extra or chaotic beats would masquerade as breathing
+    else if (hb && hb.q >= 0.45 && !r.afLike && r.ectopic < 3) { M.br = M.brHeart; M.brFrom = 'heart'; }
     if (aud && aud.hs && aud.hs.s1s2 >= 150 && aud.hs.s1s2 <= 500 && !(disagree && src === mot)) { M.s1s2 = round(aud.hs.s1s2, 0); M.s2s1 = round(aud.hs.ratio, 2); }
     if (mot) M.beatAmp = round(Math.max(...mot.tp.tpl) - Math.min(...mot.tp.tpl), 4);
     res.agree = mot && aud && mot.cons > 0.3 && aud.cons > 0.3 ? Math.abs(mot.r.hr - aud.r.hr) <= 5 : null;
