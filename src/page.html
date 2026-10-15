@@ -202,8 +202,8 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <h2>Take a reading</h2>
       <ol class="steps">
         <li>Lie flat on your back. Take the phone out of its case and lay it screen up, lengthwise, on the lower half of your breastbone.</li>
-        <li>Tap <b>Start</b>. You get 10 seconds to settle, then one beep: breathe normally and keep still.</li>
-        <li>Two beeps mean it's finished. The screen stays on the whole time.</li>
+        <li>Tap <b>Start</b>. You get 10 seconds to settle, then a soft chime: breathe normally and keep still.</li>
+        <li>A rising three-note chime means it's finished. The screen stays on the whole time.</li>
       </ol>
       <div class="seg" role="radiogroup" aria-label="Reading length">
         <button role="radio" data-dur="60" aria-checked="true">60 s</button><button role="radio" data-dur="90" aria-checked="false">90 s</button><button role="radio" data-dur="120" aria-checked="false">2 min</button>
@@ -269,7 +269,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
           <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on the bed and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
           <li>Take the phone out of its case and lay it face up, flat and lengthwise on the lower half of your breastbone. Put the bottom edge (where the microphone is) slightly toward your left side.</li>
           <li>Quiet room, phone on Do Not Disturb. Breathe normally, don't talk, keep still.</li>
-          <li>Tap Start, settle during the 10-second countdown, and stay still until the two beeps. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
+          <li>Tap Start, settle during the 10-second countdown, and stay still until the closing chime. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
           <li>Tag anything unusual (coffee, alcohol, short sleep, workout, feeling unwell). Tags explain outliers later.</li>
           <li>Mark 3–5 calm, typical mornings as your baseline. Until you do, the first three good readings are used.</li>
         </ol>
@@ -824,17 +824,22 @@ $('#btn-sim').onclick = () => {
 
 /* ---------- live recording ---------- */
 function blockMean(x, f) { if (f <= 1) return x; const n = Math.floor(x.length / f), y = new Float32Array(n); for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < f; k++) s += x[i * f + k]; y[i] = s / f; } return y; }
-function beep(ac, n = 1) {
+// soft bell-like chimes: a sine with a few gentle overtones and a long, natural fade
+function chime(ac, notes, gap = 0.22, ring = 1.6) {
   if (!ac) return;
   try {
-    for (let i = 0; i < n; i++) {
-      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + 0.05 + i * 0.4;
-      o.type = 'triangle'; o.frequency.value = 1050; o.connect(g); g.connect(ac.destination);
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9, t + 0.02); g.gain.setValueAtTime(0.9, t + 0.24); g.gain.linearRampToValueAtTime(0, t + 0.28);
-      o.start(t); o.stop(t + 0.3);
-    }
+    const out = ac.createGain(); out.gain.value = 0.55; out.connect(ac.destination);
+    notes.forEach((f, i) => {
+      const t = ac.currentTime + 0.05 + i * gap;
+      [[1, 1], [2, 0.18], [3, 0.05]].forEach(([h, a]) => {
+        const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f * h;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + ring / h);
+        o.connect(g); g.connect(out); o.start(t); o.stop(t + ring / h + 0.05);
+      });
+    });
   } catch { }
 }
+const START_CHIME = [659.3], END_CHIME = [523.3, 659.3, 784.0];   // E5; then C5 E5 G5, a rising major chord
 // Android vibrates; iPhone web pages can't, but toggling a hidden switch gives a light haptic tick on iOS 18+
 const haptic = (() => { const l = document.createElement('label'), c = document.createElement('input'); c.type = 'checkbox'; c.setAttribute('switch', ''); l.appendChild(c); l.style.cssText = 'position:fixed;left:-99px;width:1px;height:1px;opacity:0;pointer-events:none'; l.setAttribute('aria-hidden', 'true'); document.body.appendChild(l); return l; })();
 function buzz(n = 1) {
@@ -934,7 +939,7 @@ $('#btn-live').onclick = async () => {
     removeEventListener('devicemotion', onMotion);
     try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
     stream && stream.getTracks().forEach(t => t.stop());
-    setTimeout(() => { try { ac && ac.close(); } catch { } try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch { } }, 2000);
+    setTimeout(() => { try { ac && ac.close(); } catch { } try { if (navigator.audioSession) navigator.audioSession.type = "auto"; } catch { } }, 2600);
     awake.stop(); ui.live.hidden = true; document.body.style.overflow = '';
   };
 
@@ -977,7 +982,7 @@ $('#btn-live').onclick = async () => {
         const left = SETTLE - (tn - tStart);
         ui.phase.textContent = 'Lie back and rest the phone on your breastbone';
         ui.count.textContent = Math.max(1, Math.ceil(left)); ui.unit.textContent = 's to start';
-        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; beep(ac); buzz(1); }
+        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); }
       } else {
         const el = tn - t0;
         ui.phase.textContent = 'Recording. Breathe normally and stay still';
@@ -1008,7 +1013,7 @@ $('#btn-live').onclick = async () => {
   // while the microphone is live iOS plays sound quietly; release it first, then beep
   try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
   stream && stream.getTracks().forEach(t => t.stop());
-  if (mode !== 'cancel') { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { } await new Promise(r => setTimeout(r, 300)); beep(ac, 2); buzz(2); }
+  if (mode !== 'cancel') { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { } await new Promise(r => setTimeout(r, 300)); chime(ac, END_CHIME); buzz(2); }
   cleanup(); ui.bar.style.width = '0';
   if (mode === 'cancel') return;
   if (recorded < 15) { showStartMsg('That reading was too short to analyse. Record at least 20 seconds.'); return; }
