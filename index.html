@@ -156,6 +156,15 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .signs dd { margin: 2px 0 0; font-size: .86rem; color: var(--muted); overflow-wrap: anywhere }
 .signs dd.when { font-family: var(--mono); font-size: .76rem }
 .guide li { overflow-wrap: anywhere }
+.welcome { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.welcome-in { max-width: 520px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 18px; padding-block: 28px 20px }
+.welcome .lock { width: 64px; height: 64px; border-radius: 18px; background: var(--breath-soft); display: grid; place-items: center }
+.welcome h2 { font-size: 2rem; line-height: 1.1 }
+.welcome ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px }
+.welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
+.welcome .go { margin-top: auto }
+.local-pill { display: inline-flex; align-items: center; gap: 6px; font: 600 .78rem var(--body); color: var(--breath); background: var(--breath-soft); padding: 4px 10px; border-radius: 99px; border: 0; cursor: pointer }
+
 .share { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; background: var(--breath-soft) }
 .share p { margin-top: 2px }
 
@@ -163,7 +172,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 
 <div class="wrap">
   <header class="top">
-    <div class="brand"><span class="pulse-dot" aria-hidden="true"></span><h1>Sternum</h1><span class="tag">phone-on-chest heart &amp; breath log</span></div>
+    <div class="brand"><span class="pulse-dot" aria-hidden="true"></span><h1>Sternum</h1><span class="tag">phone-on-chest heart &amp; breath log</span><button class="local-pill" id="btn-privacy" style="margin-left:auto"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>Data stays on this phone</button></div>
     <nav class="tabs" role="tablist">
       <button role="tab" id="tab-record" data-tab="record" aria-selected="true">Record</button>
       <button role="tab" id="tab-trends" data-tab="trends" aria-selected="false">Trends</button>
@@ -194,6 +203,24 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
     <section class="panel" id="result-panel" hidden></section>
   </main>
 
+
+  <section class="welcome" id="welcome" hidden>
+    <div class="welcome-in">
+      <div class="lock" style="color:var(--breath)"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+      <h2>Your data stays on this phone</h2>
+      <ul>
+        <li>No account, no server, no cloud. Readings are worked out and stored right here in this browser.</li>
+        <li>Nothing is uploaded. Raw sound is never kept beyond your last 10 readings, and never sent anywhere.</li>
+        <li>The only way data leaves is a file you choose to save or share yourself.</li>
+      </ul>
+      <div class="safety">
+        <b>Experimental, not a medical device</b>
+        <span>Sternum is a personal curiosity project. It can be wrong, and it cannot rule anything out.</span>
+        <span>Chest pain, fainting, severe breathlessness or a racing heart that won't settle: call emergency services, don't take a reading.</span>
+      </div>
+      <button class="go" id="btn-welcome">I understand, let's start</button>
+    </div>
+  </section>
   <section class="live" id="live" hidden aria-live="polite">
     <div class="live-in">
       <div class="live-head"><span id="live-phase">Get settled</span><span id="live-sensors" class="small muted"></span></div>
@@ -257,8 +284,10 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       </section>
       <div class="sep"></div>
       <section>
-        <h2>How your data is kept</h2>
+        <h2 id="privacy">How your data is kept</h2>
         <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can send it to Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup or to attach your readings in the Claude chat.</p>
+        <p class="small muted">The page loads its fonts from Google Fonts; no readings go with that request. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
+        <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
       </section>
     </article>
   </main>
@@ -1417,6 +1446,12 @@ $('#btn-live').onclick = async () => {
 
 /* ---------- start ---------- */
 S.sessions = loadLocal();
+const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
+$('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
+$('#btn-intro').onclick = showWelcome;
+$('#btn-privacy').onclick = () => { setTab('guide'); requestAnimationFrame(() => $('#privacy').scrollIntoView({ block: 'start' })); };
+let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
+if (!welcomed) showWelcome();
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 // open on a realistic working state: the latest reading (an example until you have your own)

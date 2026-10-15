@@ -9,6 +9,10 @@ A phone-on-chest heart and breathing log. Lie on your back, put the iPhone (out 
 - rhythm irregularity, extra beats and long gaps, with a Poincaré plot
 - S1–S2 heart sound interval and an averaged heartbeat waveform
 
+> **Experimental, not a medical device.** Sternum is a personal curiosity project. It has been tested on one person and on simulated data, it can be wrong, and it cannot rule anything out. Chest pain, fainting, severe breathlessness or a racing heart that won't settle need a doctor or emergency services, not a reading.
+
+> **Your data stays on your phone.** There is no account, server or upload. Readings are computed and stored in the browser; the only way data leaves is a file you save or share yourself.
+
 Each reading is compared with your own baseline (mean ± 2 SD of readings you mark as baseline) and flagged in plain language. These are wellness flags, not a diagnosis.
 
 ## Using it
@@ -35,3 +39,7 @@ No build step is needed on the host: `index.html` is committed. On Vercel, impor
 node build.js
 node test/test.js
 ```
+
+## Licence
+
+MIT, see `LICENSE`. The keep-awake video in `vendor/` is from NoSleep.js (MIT, see `vendor/NoSleep-LICENSE`).
