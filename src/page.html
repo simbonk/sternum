@@ -336,6 +336,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const fmt = (v, d = 0) => Number.isFinite(v) ? v.toFixed(d) : '–';
 const LS = 'sternum.sessions.v1';
 const HOME_IOS = `<ol class="small"><li>Open this page in <b>Safari</b>.</li><li>Tap the <b>⋯</b> button just to the right of the address bar. On older iOS, tap the Share button <svg class="share-ic" width="17" height="17" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> instead.</li><li>Tap <b>Share</b> if you see it, then scroll down and tap <b>Add to Home Screen</b> (it can be under <b>More</b>).</li><li>Leave <b>Open as Web App</b> on, tap <b>Add</b>, and from now on open Sternum from its heart icon.</li></ol>`, HOME_ANDROID = `<ol class="small"><li>In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.</li><li>Tap <b>Add to Home screen</b> or <b>Install app</b>, then <b>Install</b>.</li></ol>`;
+const HOME_NOTE = 'The Home Screen app keeps its own storage, separate from Safari. To move readings you took in Safari, use Save file there, then Import backup in the app.';
 const HOME_WHY = 'Safari deletes a website’s saved data if you don’t visit it for 7 days. Readings saved by a Home Screen app are kept, and you get the heart icon and a full-screen app.';
 let installEvt = null;
 const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
@@ -559,7 +560,7 @@ function plainEnglish(sess, B) {
   const hv = M.rmssd, hvR = rel('rmssd', hv, B);
   out.rmssd = !Number.isFinite(hv) ? '' : 'How much the gap between beats varies. Higher usually means rested. ' + (hvR === 'usual' ? 'About your usual.' : hvR === 'lower' ? 'Lower than usual: often after poor sleep, alcohol, hard exercise or a coming cold.' : hvR === 'higher' ? 'Higher than usual, usually a sign of being well rested.' : 'Very personal: most adults read 20 to 100 ms, less with age. Compare with your own readings.');
   const br = M.br;
-  out.br = !Number.isFinite(br) ? 'Not measured: the phone could not see your chest rise and fall clearly.' : br < 8 ? 'Very slow, as in deep relaxation.' : br < 12 ? 'Slow and relaxed, common lying down.' : br <= 20 ? 'Normal (12 to 20).' : br < 25 ? 'A bit fast for rest.' : 'Fast for rest.';
+  out.br = !Number.isFinite(br) ? 'Not measured: the phone could not see your chest rise and fall clearly. Keep it flat on the breastbone and breathe normally, not shallowly.' : br < 8 ? 'Very slow, as in deep relaxation.' : br < 12 ? 'Slow and relaxed, common lying down.' : br <= 20 ? 'Normal (12 to 20).' : br < 25 ? 'A bit fast for rest.' : 'Fast for rest.';
   let rw, rm;
   if (poor || !Number.isFinite(hr)) { rw = '–'; rm = 'Too noisy to judge.'; }
   else if (M.afLike || (typeof M.afLike !== 'boolean' && M.irregPct >= 35)) { rw = 'Irregular'; rm = 'The gaps between beats jumped around at random. See the note below.'; }
@@ -584,11 +585,11 @@ function plainEnglish(sess, B) {
 }
 function renderResult(sess, unsaved) {
   S.current = sess;
-  const list = shown(), B = baseline(S.sessions.length ? S.sessions : EXAMPLES, sess.id), M = sess.metrics, q = sess.quality || {};
+  const list = shown(), B = baseline(sess.example ? EXAMPLES : S.sessions, sess.id), M = sess.metrics, q = sess.quality || {};
   const flags = flagsFor(sess, B), P = plainEnglish(sess, B);
   const srcNote = sess.hrSource === 'sound' ? 'Heart rate from heart sounds' : 'Heart rate from chest motion';
   const agree = sess.agree === true ? '; motion and sound agree' : '';
-  const brS = M.brSound, brNote = Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
+  const brS = M.brSound, brNote = M.brFrom === 'sound' ? 'Breathing rate from breath sounds; chest movement was too faint to track' : Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
   const el = $('#result-panel'); el.hidden = false;
   S.charts = {};
   el.innerHTML = `
@@ -619,7 +620,7 @@ function renderResult(sess, unsaved) {
     <input type="text" id="note-in" placeholder="Note (optional)" value="${esc(sess.note || '')}" ${sess.example ? 'disabled' : ''}>
     <div class="row" style="justify-content:space-between">
       <label class="check"><input type="checkbox" id="base-in" ${sess.baseline ? 'checked' : ''} ${sess.example ? 'disabled' : ''}> Use as baseline</label>
-      <div class="row">${unsaved ? '<button class="quiet" id="btn-discard">Discard</button><button class="primary" id="btn-save">Save reading</button>' : sess.example ? '<button id="btn-close">Done</button>' : '<button id="btn-close">Done</button>'}</div>
+      <div class="row">${unsaved ? '<button class="quiet" id="btn-discard">Discard</button><button class="primary" id="btn-save">Save reading</button>' : sess.example ? '<button id="btn-close">Done</button>' : '<button class="quiet" id="btn-del-one">Delete</button><button id="btn-close">Done</button>'}</div>
     </div>`;
 
   // charts
@@ -670,6 +671,10 @@ function renderResult(sess, unsaved) {
   const base = $('#base-in'); if (base) base.onchange = () => { sess.baseline = base.checked; if (!unsaved) { persist(sess); renderResult(sess, false); } };
   const save = $('#btn-save'); if (save) save.onclick = () => { sess.note = $('#note-in').value.trim(); persist(sess); renderResult(sess, false); $('#start-panel').hidden = false; flash('Saved'); };
   const dis = $('#btn-discard'); if (dis) dis.onclick = () => { el.hidden = true; S.current = null; $('#start-panel').hidden = false; };
+  const delOne = $('#btn-del-one'); if (delOne) delOne.onclick = () => {
+    if (!delOne.dataset.armed) { delOne.dataset.armed = '1'; delOne.textContent = 'Tap to delete'; delOne.style.color = 'var(--alert)'; return; }
+    S.sessions = S.sessions.filter(x => x.id !== sess.id); saveLocal(); rawDel(sess.id); el.hidden = true; S.current = null; $('#start-panel').hidden = false; render();
+  };
   const close = $('#btn-close'); if (close) close.onclick = () => { el.hidden = true; S.current = null; $('#start-panel').hidden = false; };
 }
 function persist(sess) {
@@ -726,7 +731,7 @@ function renderSessions() {
       <span class="small muted" id="share-note"></span>
     </div>
     <span class="small muted">Saved on this phone only. Export a backup now and then.</span>
-    ${standalone || homeHidden() ? '' : `<details class="keep"><summary><img src="icons/icon-180.png" alt="Sternum icon" width="36" height="36" style="border-radius:8px;flex:none"><span>Want to keep your data on this ${/Android/i.test(navigator.userAgent) ? 'phone' : 'iPhone'}?</span><span class="chev" aria-hidden="true">›</span></summary><p class="small muted">${HOME_WHY}</p>${/Android/i.test(navigator.userAgent) ? HOME_ANDROID : HOME_IOS}<div class="row"><button class="primary btn-install" hidden>Install</button><button class="quiet" id="btn-home-hide">Hide this</button></div></details>`}
+    ${standalone || homeHidden() ? '' : `<details class="keep"><summary><img src="icons/icon-180.png" alt="Sternum icon" width="36" height="36" style="border-radius:8px;flex:none"><span>Want to keep your data on this ${/Android/i.test(navigator.userAgent) ? 'phone' : 'iPhone'}?</span><span class="chev" aria-hidden="true">›</span></summary><p class="small muted">${HOME_WHY}</p>${/Android/i.test(navigator.userAgent) ? HOME_ANDROID : HOME_IOS}<p class="small muted">${HOME_NOTE}</p><div class="row"><button class="primary btn-install" hidden>Install</button><button class="quiet" id="btn-home-hide">Hide this</button></div></details>`}
     <div class="list">${list.map(s => `
       <div class="item">
         <div><span class="when">${esc(dateStr(s.ts))}</span>${s.baseline ? '<span class="base-mark">baseline</span>' : ''}
@@ -795,6 +800,7 @@ function newSession(res, source) {
   return { id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: Date.now(), source, tags: [], note: '', baseline: false, updatedAt: Date.now(),
     durationS: res.durationS, metrics: res.metrics, quality: res.quality, hrSource: res.hrSource, agree: res.agree, notes: res.notes, soundNote: res.soundNote, ibi: res.ibi, traces: res.traces, templates: res.templates };
 }
+window.Sternum = { analyzeAndShow: (rec, source) => showAnalysis(rec, source) };
 function showAnalysis(rec, source) {
   const res = DSP.analyze(rec);
   if (res.error) { showStartMsg(res.error); return; }
@@ -803,7 +809,8 @@ function showAnalysis(rec, source) {
   if (source === 'simulated') { s.note = 'Simulated reading'; }
   S.pendingRaw = source === 'live' ? { id: s.id, raw: packRaw(rec) } : null;
   $('#start-panel').hidden = true;
-  renderResult(s, true);
+  if (source === 'live') { persist(s); renderResult(s, false); flash('Reading saved'); }
+  else renderResult(s, true);
   scrollTo(0, 0);
 }
 function showStartMsg(t) { const m = $('#start-msg'); m.className = 'banner warn'; m.textContent = t; m.hidden = false; $('#start-panel').hidden = false; }
@@ -1003,7 +1010,7 @@ let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
 document.addEventListener('click', async e => { if (!e.target.closest('.btn-install') || !installEvt) return; installEvt.prompt(); await installEvt.userChoice.catch(() => null); installEvt = null; document.querySelectorAll('.btn-install').forEach(b => b.hidden = true); });
-$('#home-steps').innerHTML = `<div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><p class="small muted" style="margin:0">${HOME_WHY}</p></div><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}`;
+$('#home-steps').innerHTML = `<div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><p class="small muted" style="margin:0">${HOME_WHY}</p></div><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}<p class="small muted">${HOME_NOTE}</p>`;
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 $('#example-note').hidden = S.sessions.length > 0;

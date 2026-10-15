@@ -447,7 +447,10 @@ const DSP = (() => {
     M.afLike = r.afLike; M.nrmssd = round(r.nrmssd, 3); M.tpr = round(r.tpr, 2); M.rrEntropy = round(r.rrEntropy, 2);
     M.beats = r.beats; M.coverage = round(r.coverage, 2);
     if (bsnd && Number.isFinite(bsnd.br)) M.brSound = round(bsnd.br, 1);
-    if (mot && mot.br && mot.br.q >= 0.4) { M.br = round(mot.br.br, 1); M.brCV = round(mot.br.brCV, 1); M.breathPauseS = round(mot.br.pauseS, 0); M.rsa = round(mot.br.rsa, 1); }
+    // chest tilt is the main breathing source; a weaker tilt signal still counts when breath sounds agree with it
+    const soundOk = Number.isFinite(M.brSound), tiltBr = mot && mot.br;
+    if (tiltBr && (tiltBr.q >= 0.4 || (tiltBr.q >= 0.2 && soundOk && Math.abs(tiltBr.br - M.brSound) <= 2))) { M.br = round(tiltBr.br, 1); M.brCV = round(tiltBr.brCV, 1); M.breathPauseS = round(tiltBr.pauseS, 0); M.rsa = round(tiltBr.rsa, 1); M.brFrom = 'motion'; }
+    else if (soundOk) { M.br = M.brSound; M.brFrom = 'sound'; }
     if (aud && aud.hs && aud.hs.s1s2 >= 150 && aud.hs.s1s2 <= 500 && !(disagree && src === mot)) { M.s1s2 = round(aud.hs.s1s2, 0); M.s2s1 = round(aud.hs.ratio, 2); }
     if (mot) M.beatAmp = round(Math.max(...mot.tp.tpl) - Math.min(...mot.tp.tpl), 4);
     res.agree = mot && aud && mot.cons > 0.3 && aud.cons > 0.3 ? Math.abs(mot.r.hr - aud.r.hr) <= 5 : null;
