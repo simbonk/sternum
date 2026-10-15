@@ -1396,7 +1396,23 @@ $('#btn-sim').onclick = () => {
 
 /* ---------- live recording ---------- */
 function blockMean(x, f) { if (f <= 1) return x; const n = Math.floor(x.length / f), y = new Float32Array(n); for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < f; k++) s += x[i * f + k]; y[i] = s / f; } return y; }
-function beep(ac, n = 1) { if (!ac) return; try { for (let i = 0; i < n; i++) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.value = 0.2; o.connect(g); g.connect(ac.destination); const t = ac.currentTime + i * 0.25; o.start(t); o.stop(t + 0.15); } } catch { } }
+function beep(ac, n = 1) {
+  if (!ac) return;
+  try {
+    for (let i = 0; i < n; i++) {
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + 0.05 + i * 0.4;
+      o.type = 'triangle'; o.frequency.value = 1050; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9, t + 0.02); g.gain.setValueAtTime(0.9, t + 0.24); g.gain.linearRampToValueAtTime(0, t + 0.28);
+      o.start(t); o.stop(t + 0.3);
+    }
+  } catch { }
+}
+// Android vibrates; iPhone web pages can't, but toggling a hidden switch gives a light haptic tick on iOS 18+
+const haptic = (() => { const l = document.createElement('label'), c = document.createElement('input'); c.type = 'checkbox'; c.setAttribute('switch', ''); l.appendChild(c); l.style.cssText = 'position:fixed;left:-99px;width:1px;height:1px;opacity:0;pointer-events:none'; l.setAttribute('aria-hidden', 'true'); document.body.appendChild(l); return l; })();
+function buzz(n = 1) {
+  if (navigator.vibrate) { navigator.vibrate(n > 1 ? [250, 150, 250] : [300]); return; }
+  for (let i = 0; i < n * 3; i++) setTimeout(() => { try { haptic.click(); } catch { } }, i * 90 + (i >= 3 ? 250 : 0));
+}
 
 // keep the screen on: Wake Lock where it works, plus a silent looping video, which iOS also honours
 const sleepVideo = (() => {
@@ -1490,7 +1506,7 @@ $('#btn-live').onclick = async () => {
     removeEventListener('devicemotion', onMotion);
     try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
     stream && stream.getTracks().forEach(t => t.stop());
-    setTimeout(() => { try { ac && ac.close(); } catch { } }, 800);
+    setTimeout(() => { try { ac && ac.close(); } catch { } try { if (navigator.audioSession) navigator.audioSession.type = 'auto'; } catch { } }, 2000);
     awake.stop(); ui.live.hidden = true; document.body.style.overflow = '';
   };
 
@@ -1533,7 +1549,7 @@ $('#btn-live').onclick = async () => {
         const left = SETTLE - (tn - tStart);
         ui.phase.textContent = 'Lie back and rest the phone on your breastbone';
         ui.count.textContent = Math.max(1, Math.ceil(left)); ui.unit.textContent = 's to start';
-        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; beep(ac); }
+        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; beep(ac); buzz(1); }
       } else {
         const el = tn - t0;
         ui.phase.textContent = 'Recording. Breathe normally and stay still';
@@ -1561,7 +1577,10 @@ $('#btn-live').onclick = async () => {
   });
   const recorded = recording ? now() - t0 : 0;
   recording = false;
-  if (mode !== 'cancel') beep(ac, 2);
+  // while the microphone is live iOS plays sound quietly; release it first, then beep
+  try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
+  stream && stream.getTracks().forEach(t => t.stop());
+  if (mode !== 'cancel') { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { } await new Promise(r => setTimeout(r, 300)); beep(ac, 2); buzz(2); }
   cleanup(); ui.bar.style.width = '0';
   if (mode === 'cancel') return;
   if (recorded < 15) { showStartMsg('That reading was too short to analyse. Record at least 20 seconds.'); return; }
