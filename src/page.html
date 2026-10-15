@@ -313,9 +313,35 @@ function packRaw(rec) {
   if (rec.audio) { const x = rec.audio.samples; let pk = 0; for (let i = 0; i < x.length; i++) pk = Math.max(pk, Math.abs(x[i])); pk = pk || 1; out.audio = { sr: rec.audio.sr, scale: pk, pcm: Int16Array.from(x, v => Math.round(v / pk * 32767)) }; }
   return out;
 }
+// a field guide travels inside every export, so any reader (or another Claude) can interpret it cold
+const EXPORT_ABOUT = {
+  what: 'Sternum readings. The person lies on their back with an iPhone (no case) flat on the lower breastbone for 60-120 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest) and the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
+  sessions: {
+    id: 'unique reading id; keys raw data in "raw"', ts: 'start time, ms since 1970 (UTC)', source: 'live = recorded on the phone; simulated = synthetic demo',
+    tags: 'context the person ticked (coffee, short sleep, ...)', note: 'free text', baseline: 'true if marked as part of their personal baseline',
+    durationS: 'seconds analysed', hrSource: 'which signal gave the beat times: motion or sound', agree: 'true if motion and sound heart rates were within 5 bpm; null if not both usable',
+    quality: 'motion / audio: median correlation of single beats with the average beat (0-1); breath: autocorrelation strength of the breathing trace (0-1); grade: good >= 0.6, fair >= 0.45, else poor',
+    notes: 'warnings raised during analysis', soundNote: 'set when the microphone missed heart sounds',
+    ibi: 'beat-to-beat intervals in ms, in order',
+    traces: 'downsampled signals for charts: beat (beat-energy envelope, 25 Hz), breath (chest-tilt breathing, 10 Hz), sound (heart-sound envelope, 25 Hz); emptied for older readings',
+    templates: 'scg: average chest-motion heartbeat, 100 Hz, from 200 ms before to 600 ms after the beat; scgN: beats averaged; pcg: average heart-sound envelope, 100 Hz, from 350 ms before to 950 ms after; s1/s2: sample index of the S1/S2 peaks in pcg'
+  },
+  metrics: {
+    hr: 'heart rate, bpm (60 / median clean beat interval)', hrMotion: 'heart rate from motion alone, bpm', hrSound: 'heart rate from microphone alone, bpm (null if unusable)',
+    rmssd: 'HRV: root mean square of successive beat-interval differences, ms (clean beats only)', sdnn: 'standard deviation of clean beat intervals, ms', pnn50: '% of successive intervals differing by more than 50 ms',
+    irregPct: '% of consecutive beat pairs differing by more than 12% (breathing-linked swings count too)', ectopic: 'count of early beats followed by a longer pause', pauses: 'count of beat gaps over 2 s',
+    beats: 'beats detected', coverage: 'fraction of the recording covered by clean beats (0-1)',
+    br: 'breathing rate from chest tilt, breaths/min', brSound: 'breathing rate from breath sounds, breaths/min (null if not heard clearly)', brCV: 'breath-to-breath interval variation, %',
+    breathPauseS: 'longest gap without breathing, s (0 = none over 12 s)', rsa: 'breath-linked heart rate swing: median max-min heart rate within a breath, bpm',
+    s1s2: 'time from first to second heart sound, ms (approximates systole; null if heart sounds not heard)', s2s1: 'S2/S1 loudness ratio', beatAmp: 'peak-to-peak size of the average chest-motion beat (depends on phone placement)'
+  },
+  raw: 'Raw recordings for the latest readings, keyed by session id. motion.t: seconds; ax, ay, az: acceleration without gravity, m/s²; gx, gy, gz: rotation rate °/s (iOS beta, gamma, alpha = around the phone x, y, z axes); tx, ty, tz: acceleration including gravity, m/s² (used for chest tilt). iOS delivers about 60 samples/s. audio: mono, sr samples/s, little-endian int16 in base64; multiply by scale/32767 for the original level.',
+  flags: 'The app flags (vs the person\'s baseline mean ± max(2 SD, a floor)): resting HR 8+ bpm above baseline or over 100; RMSSD below baseline range and under 70% of its mean; breathing 3+/min above baseline or over 20; irregPct >= 35 in a good-quality reading; 3+ early beats; beat gaps over 2 s; breathing pause >= 12 s; beat-shape match with baseline under 70%.',
+  source: 'https://github.com/simbonk/sternum (src/analysis.js has the signal processing)'
+};
 function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
 function rawForExport(r) {
-  const o = { units: 't: seconds; ax..az: m/s² without gravity; gx,gy,gz: rotation rate °/s (beta, gamma, alpha); tx..tz: m/s² with gravity; audio: little-endian int16, multiply by scale/32767' };
+  const o = {};
   if (r.motion) { o.motion = {}; for (const [k, v] of Object.entries(r.motion)) o.motion[k] = Array.from(v, x => Math.round(x * 1e5) / 1e5); }
   if (r.audio) o.audio = { sr: r.audio.sr, scale: r.audio.scale, int16_base64: b64(new Uint8Array(r.audio.pcm.buffer, r.audio.pcm.byteOffset, r.audio.pcm.byteLength)) };
   return o;
@@ -613,7 +639,7 @@ function renderSessions() {
   let prepared = null;
   const build = async () => {
     const note = $('#share-note'); note.textContent = 'Preparing…';
-    const out = { app: 'sternum', version: 2, exported: new Date().toISOString(), device: navigator.userAgent, sessions: S.sessions };
+    const out = { app: 'sternum', version: 2, exported: new Date().toISOString(), about: EXPORT_ABOUT, device: navigator.userAgent, sessions: S.sessions };
     if ($('#raw-in').checked) { out.raw = {}; for (const s of S.sessions.slice(-3)) { const r = await rawGet(s.id); if (r) out.raw[s.id] = rawForExport(r); } }
     const n = out.raw ? Object.keys(out.raw).length : 0;
     const name = `sternum-${new Date().toISOString().slice(0, 10)}${n ? '-raw' : ''}.json`;
