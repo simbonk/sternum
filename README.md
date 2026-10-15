@@ -17,7 +17,7 @@ Open the site in Safari on the iPhone (it must be served over https, for example
 
 Add it to the Home Screen so iOS keeps its saved readings.
 
-Readings are stored on the phone only: summaries in localStorage, raw sensor data from the last 10 readings in IndexedDB. Raw audio is kept only as 4 kHz samples for those readings and never leaves the phone unless you share it. **Sessions → Share with Claude** builds one JSON file with your readings (and optionally raw data for the last 3) and opens the share sheet.
+Readings are stored on the phone only: summaries in localStorage, raw sensor data from the last 10 readings in IndexedDB. Raw audio is kept only as 4 kHz samples for those readings and never leaves the phone unless you share it. **Sessions → Save file** saves one JSON file with your readings (and optionally raw data for the last 3) to the Files app; **Share…** opens the share sheet instead.
 
 ## Deploying
 

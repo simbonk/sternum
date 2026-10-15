@@ -258,7 +258,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <div class="sep"></div>
       <section>
         <h2>How your data is kept</h2>
-        <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can send it to Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Share with Claude to send your readings, or Export backup to keep a copy.</p>
+        <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can send it to Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup or to attach your readings in the Claude chat.</p>
       </section>
     </article>
   </main>
@@ -1118,12 +1118,13 @@ function renderTrends() {
 function renderSessions() {
   const el = $('#view-sessions'), list = shown().slice().sort((a, b) => b.ts - a.ts), ex = !S.sessions.length;
   el.innerHTML = `<section class="panel">
-    <div class="row" style="justify-content:space-between"><h2>Sessions</h2><div class="row"><input type="file" id="backup-in" accept=".json,application/json" hidden><button class="quiet" id="btn-restore">Import backup</button><button class="quiet" id="btn-export" ${ex ? 'disabled' : ''}>Export backup</button></div></div>
+    <div class="row" style="justify-content:space-between"><h2>Sessions</h2><div class="row"><input type="file" id="backup-in" accept=".json,application/json" hidden><button class="quiet" id="btn-restore">Import backup</button></div></div>
     ${ex ? '<div class="banner">Example readings shown. Your own readings will replace them.</div>' : ''}
     <div class="share">
-      <div><b>Share with Claude</b><p class="small muted">Makes one file with all your readings. Send it to Claude (share sheet → Claude, or save to Files and attach it in the chat).</p></div>
-      <label class="check"><input type="checkbox" id="raw-in" checked> Include raw sensor data from the last 3 readings, so Claude can check the analysis</label>
-      <div class="row"><button class="primary" id="btn-share" ${ex ? 'disabled' : ''}>Prepare file</button><button id="btn-send" hidden>Send file</button><span class="small muted" id="share-note"></span></div>
+      <div><b>Export your readings</b><p class="small muted">Saves one file with all your readings. Attach it in the Claude project chat to have them checked, or keep it as a backup.</p></div>
+      <label class="check"><input type="checkbox" id="raw-in" checked> Include raw sensor data from the last 3 readings</label>
+      <div class="row"><button class="primary" id="btn-save-file" ${ex ? 'disabled' : ''}>Save file</button><button id="btn-share" ${ex ? 'disabled' : ''}>Share…</button><button id="btn-send" hidden>Open share sheet</button></div>
+      <span class="small muted" id="share-note"></span>
     </div>
     <span class="small muted">Saved on this phone only. Export a backup now and then.</span>
     <div class="list">${list.map(s => `
@@ -1140,23 +1141,24 @@ function renderSessions() {
     b.dataset.armed = '1'; b.textContent = 'Tap to delete'; b.style.color = 'var(--alert)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Delete'; b.style.color = ''; } }, 3000);
   });
   let prepared = null;
-  $('#btn-share').onclick = async () => {
+  const build = async () => {
     const note = $('#share-note'); note.textContent = 'Preparing…';
     const out = { app: 'sternum', version: 2, exported: new Date().toISOString(), device: navigator.userAgent, sessions: S.sessions };
     if ($('#raw-in').checked) { out.raw = {}; for (const s of S.sessions.slice(-3)) { const r = await rawGet(s.id); if (r) out.raw[s.id] = rawForExport(r); } }
-    const name = `sternum-${new Date().toISOString().slice(0, 10)}${out.raw ? '-raw' : ''}.json`;
-    prepared = new File([JSON.stringify(out)], name, { type: 'application/json' });
     const n = out.raw ? Object.keys(out.raw).length : 0;
+    const name = `sternum-${new Date().toISOString().slice(0, 10)}${n ? '-raw' : ''}.json`;
+    prepared = new File([JSON.stringify(out)], name, { type: 'application/json' });
     note.textContent = `${S.sessions.length} reading${S.sessions.length === 1 ? '' : 's'}${out.raw ? `, raw data for ${n}` : ''} · ${(prepared.size / 1e6).toFixed(1)} MB`;
-    $('#btn-send').hidden = false;
+    return prepared;
   };
-  // the share sheet must open straight from a tap, so sending is its own button
+  $('#btn-save-file').onclick = async () => { saveFile(await build()); $('#share-note').textContent += ' · saved to Downloads in the Files app'; };
+  $('#btn-share').onclick = async () => { await build(); $('#btn-send').hidden = false; };
+  // the share sheet must open straight from a tap, so it gets its own button
   $('#btn-send').onclick = () => {
     if (!prepared) return;
     if (navigator.canShare && navigator.canShare({ files: [prepared] })) navigator.share({ files: [prepared], title: 'Sternum readings' }).catch(e => { if (e.name !== 'AbortError') saveFile(prepared); });
     else saveFile(prepared);
   };
-  $('#btn-export').onclick = () => saveFile(new File([JSON.stringify({ app: 'sternum', version: 2, exported: new Date().toISOString(), sessions: S.sessions })], 'sternum-backup-' + new Date().toISOString().slice(0, 10) + '.json', { type: 'application/json' }));
   $('#btn-restore').onclick = () => $('#backup-in').click();
   $('#backup-in').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
