@@ -233,7 +233,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
           <li><b>Breathing rate, regularity and pauses.</b> The phone tilts as your chest rises, so the gravity reading traces each breath.</li>
           <li><b>Breath-linked heart swing.</b> Your heart speeds up on the in-breath and slows on the out-breath (respiratory sinus arrhythmia). A healthy, relaxed system shows a clear swing.</li>
           <li><b>Rhythm regularity and extra beats.</b> Large jumps between consecutive beats, and early beats followed by a pause, show up in the beat-interval chart and the Poincaré plot. A steady rhythm makes a tight comet shape; an irregular one scatters.</li>
-          <li><b>Heart sound timing.</b> The S1 to S2 gap approximates how long each contraction lasts (systole). It shortens as heart rate rises, so compare it at similar heart rates.</li>
+          <li><b>Heart sound timing.</b> The S1 to S2 gap approximates how long each contraction lasts (systole). It shortens as heart rate rises. In practice the iPhone microphone filters out most of the low rumble of heart sounds, so this often stays blank; it hears your breathing clearly instead, which double-checks the breathing rate.</li>
           <li><b>Beat shape.</b> The averaged chest-motion waveform has peaks linked to valves opening and closing. Research groups use it for cardiac timing and strength. Here it is compared against your baseline shape; most changes come from phone placement.</li>
         </ul>
         <p class="small muted">What it cannot do: blood pressure, oxygen, an electrical ECG, or reliable murmur detection. A phone microphone is not a stethoscope.</p>
@@ -284,7 +284,13 @@ const S = { sessions: [], tab: 'record', current: null, pendingRaw: null, charts
 
 /* ---------- storage: readings in localStorage, raw sensor data in IndexedDB ---------- */
 function loadLocal() { try { const v = JSON.parse(localStorage.getItem(LS) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } }
-function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(S.sessions)); } catch { } }
+// charts are kept for the latest 20 readings; older ones keep their numbers, beat intervals and average heartbeat
+const TRACE_KEEP = 20;
+function saveLocal() {
+  const keep = new Set(S.sessions.slice(-TRACE_KEEP).map(s => s.id));
+  for (const s of S.sessions) if (!keep.has(s.id) && s.traces && Object.keys(s.traces).length) s.traces = {};
+  try { localStorage.setItem(LS, JSON.stringify(S.sessions)); } catch { }
+}
 const RAW_KEEP = 10;
 let idbP = null;
 function idb() {
@@ -458,6 +464,7 @@ function renderResult(sess, unsaved) {
   const flags = flagsFor(sess, B);
   const srcNote = sess.hrSource === 'sound' ? 'Heart rate from heart sounds' : 'Heart rate from chest motion';
   const agree = sess.agree === true ? '; motion and sound agree' : '';
+  const brS = M.brSound, brNote = Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
   const el = $('#result-panel'); el.hidden = false;
   S.charts = {};
   el.innerHTML = `
@@ -478,6 +485,7 @@ function renderResult(sess, unsaved) {
       ${sess.traces?.breath ? chartBox('c-br', 'Breathing', 'Chest tilt, band-passed') : ''}
     </div>
     ${sess.notes?.length ? `<div class="banner warn">${sess.notes.map(esc).join(' ')}</div>` : ''}
+    ${brNote || sess.soundNote ? `<p class="small muted">${esc([brNote, sess.soundNote].filter(Boolean).join('. '))}</p>` : ''}
     <div class="sep"></div>
     <div class="chips" id="tag-chips">${TAGS.map(t => `<button class="chip" aria-pressed="${(sess.tags || []).includes(t)}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>
     <input type="text" id="note-in" placeholder="Note (optional)" value="${esc(sess.note || '')}" ${sess.example ? 'disabled' : ''}>
@@ -648,7 +656,7 @@ document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => setT
 /* ---------- making a session ---------- */
 function newSession(res, source) {
   return { id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: Date.now(), source, tags: [], note: '', baseline: false, updatedAt: Date.now(),
-    durationS: res.durationS, metrics: res.metrics, quality: res.quality, hrSource: res.hrSource, agree: res.agree, notes: res.notes, ibi: res.ibi, traces: res.traces, templates: res.templates };
+    durationS: res.durationS, metrics: res.metrics, quality: res.quality, hrSource: res.hrSource, agree: res.agree, notes: res.notes, soundNote: res.soundNote, ibi: res.ibi, traces: res.traces, templates: res.templates };
 }
 function showAnalysis(rec, source) {
   const res = DSP.analyze(rec);

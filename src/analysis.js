@@ -145,9 +145,11 @@ const DSP = (() => {
     for (let k = 0; k < out.length; k++) {
       filled.push(out[k]);
       const nx = out[k + 1];
-      if (nx === undefined || nx - out[k] < 1.6 * P) continue;
+      if (nx === undefined || nx - out[k] < 1.4 * P) continue;
+      // a missed weak beat sits near the middle of the gap
+      const c = (out[k] + nx) / 2, half = 0.2 * (nx - out[k]);
       let b = -1;
-      for (let i = Math.round(out[k] + 0.6 * P); i <= nx - 0.6 * P; i++) if (env[i] > env[i - 1] && env[i] >= env[i + 1] && (b < 0 || env[i] > env[b])) b = i;
+      for (let i = Math.round(c - half); i <= c + half; i++) if (env[i] > env[i - 1] && env[i] >= env[i + 1] && (b < 0 || env[i] > env[b])) b = i;
       if (b > 0 && env[b] > mid + 0.1 * (hi - mid)) filled.push(b);
     }
     return filled;
@@ -213,25 +215,40 @@ const DSP = (() => {
     return Float64Array.from(a, (v, i) => (v - ma) * c + (b[i] - mb) * s);
   }
 
-  function breathing(sig, fs, beatT, instHR) {
+  function breathing(sig, fs, beatT, instHR, soundT) {
     // work at 10 Hz
     const f = Math.round(fs / 10), x = decimate(sig, f), fb = fs / f;
     const bp = bandpass(x, fb, 0.08, 0.9);
     const p = period(bp, Math.round(2 * fb), Math.round(15 * fb));
     const P = p.lag;
     if (!Number.isFinite(P)) return { br: NaN, q: 0, trace: bp };
-    const sdv = std(bp);
-    const pk = findPeaks(bp, 0.55 * P, 0.15 * sdv);
+    // breaths are often sharp dips with flat tops (or the reverse): point the sharp side up before counting
+    const m0 = mean(bp); let sk = 0; for (const v of bp) sk += (v - m0) ** 3;
+    const y = sk < 0 ? Float64Array.from(bp, v => -v) : bp;
+    // judge each breath against its neighbours, so shallow stretches still count but a flat pause does not
+    const gRange = pct(y, 0.98) - pct(y, 0.02), hw = Math.round(0.8 * P), sw = Math.round(0.5 * P);
+    const prom = {};
+    const pk = findPeaks(y, 0.55 * P, -Infinity).filter(i => {
+      let lo = Infinity, hi = -Infinity, l = Infinity, r = Infinity;
+      for (let k = Math.max(0, i - hw); k <= Math.min(y.length - 1, i + hw); k++) { lo = Math.min(lo, y[k]); hi = Math.max(hi, y[k]); }
+      for (let k = Math.max(0, i - sw); k < i; k++) l = Math.min(l, y[k]);
+      for (let k = i + 1; k <= Math.min(y.length - 1, i + sw); k++) r = Math.min(r, y[k]);
+      const lr = hi - lo; prom[i] = y[i] - Math.max(l, r);
+      return lr >= 0.1 * gRange && prom[i] >= 0.3 * lr;
+    });
     const bi = []; for (let i = 1; i < pk.length; i++) bi.push((pk[i] - pk[i - 1]) / fb);
-    // amplitude over a sliding breath-long window, to find pauses
-    const w = Math.round(P), amp = [];
-    for (let i = 0; i + w <= bp.length; i += Math.max(1, Math.round(fb / 2))) {
-      let lo = Infinity, hi = -Infinity; for (let k = i; k < i + w; k++) { lo = Math.min(lo, bp[k]); hi = Math.max(hi, bp[k]); }
-      amp.push(hi - lo);
+    // a pause is a long gap between breaths, well inside the recording (filter edges excluded)
+    // only clear breaths count here, so filter ringing inside a real pause does not hide it
+    const edge = 5 * fb, mBi = median(bi), strong = pk.filter(i => prom[i] >= 0.2 * gRange);
+    let pauseS = 0;
+    for (let i = 1; i < strong.length; i++) {
+      const gap = (strong[i] - strong[i - 1]) / fb;
+      // two or more shallow breaths inside the gap means shallow breathing, not a pause
+      const shallow = pk.filter(k => k > strong[i - 1] && k < strong[i]).length;
+      // the microphone hearing breaths inside the gap also rules out a pause
+      const heard = (soundT || []).some(t => t > strong[i - 1] / fb + 2 && t < strong[i] / fb - 2);
+      if (!heard && strong[i - 1] > edge && strong[i] < y.length - edge && gap > Math.max(12, 2.5 * mBi) && shallow < 2) pauseS = Math.max(pauseS, gap);
     }
-    const mAmp = median(amp); let run = 0, longest = 0;
-    for (const a of amp) { if (a < 0.25 * mAmp) { run += 0.5; longest = Math.max(longest, run); } else run = 0; }
-    const pauseS = longest > 0 ? longest + w / fb : 0;
     // breath-linked heart-rate swing (respiratory sinus arrhythmia)
     let rsa = NaN;
     if (instHR && instHR.length > 4) {
@@ -245,9 +262,32 @@ const DSP = (() => {
     return {
       br: 60 * fb / P, q: p.r,
       brCV: bi.length > 2 ? 100 * std(bi) / mean(bi) : NaN,
-      pauseS: pauseS >= 10 ? pauseS : 0,
+      pauseS,
       rsa, trace: bp, fs: fb
     };
+  }
+
+  // --- microphone: breath sounds (airflow noise) -> times of breaths, 10 Hz envelope
+  function breathSounds(samples, sr) {
+    let x = Float64Array.from(samples);
+    const f1 = Math.max(1, Math.round(sr / 4000)), fa = sr / f1;
+    if (f1 > 1) x = decimate(x, f1);
+    x = bandpass(x, fa, 100, Math.min(1500, fa * 0.4));
+    const sq = Float64Array.from(x, v => v * v), f2 = Math.round(fa / 10);
+    const env = Float64Array.from(decimate(movAvg(sq, 0.3 * fa), f2), Math.sqrt);
+    const p70 = pct(env, 0.7), p20 = pct(env, 0.2), w = 20;
+    const pk = findPeaks(env, 25, p70).filter(i => {
+      let l = Infinity, r = Infinity;
+      for (let k = Math.max(0, i - w); k < i; k++) l = Math.min(l, env[k]);
+      for (let k = i + 1; k <= Math.min(env.length - 1, i + w); k++) r = Math.min(r, env[k]);
+      return env[i] - Math.max(l, r) >= 0.5 * (p70 - p20);
+    });
+    // only trust it when the sound rises and falls at a breathing pace rather than with each heartbeat
+    const pB = period(env, 20, 150), pH = period(env, 3, 16);
+    if (!(pB.r >= 0.25 && pB.r > pH.r)) return null;
+    const t = pk.map(i => i / 10), bi = [];
+    for (let i = 1; i < t.length; i++) bi.push(t[i] - t[i - 1]);
+    return { t, br: t.length >= 5 ? 60 / median(bi) : NaN, q: pB.r };
   }
 
   // --- microphone: heart sounds -> 100 Hz envelope
@@ -296,6 +336,7 @@ const DSP = (() => {
     const res = { metrics: {}, quality: {}, notes: [] };
     let mot = null, aud = null;
     const m = rec.motion;
+    const bsnd = rec.audio && rec.audio.samples && rec.audio.samples.length > rec.audio.sr * 20 ? breathSounds(rec.audio.samples, rec.audio.sr) : null;
     if (m && m.t && m.t.length > 200) {
       const t0 = m.t[0], t1 = m.t[m.t.length - 1], dur = t1 - t0;
       const rs = k => m[k] && m[k].length === m.t.length ? resample(m.t, m[k], FS, t0, t1) : null;
@@ -320,7 +361,10 @@ const DSP = (() => {
         }
         const pos = Float64Array.from(mf, v => Math.max(0, v));
         const sm = movAvg(pos, 0.05 * FS), slow = movAvg(sm, 1.5 * FS);
-        const env2 = Float64Array.from(sm, (v, i) => v - slow[i]);
+        // beat strength rises and falls with breathing; even it out so weak beats are not missed
+        const raw2 = Float64Array.from(sm, (v, i) => Math.max(0, v - slow[i]));
+        const W = Math.round(1.2 * p.lag), floor = 0.15 * pct(raw2, 0.95), env2 = new Float64Array(raw2.length);
+        for (let i = 0; i < raw2.length; i++) { let mx = 0; for (let k = Math.max(0, i - W); k <= Math.min(raw2.length - 1, i + W); k++) if (raw2[k] > mx) mx = raw2[k]; env2[i] = raw2[i] / Math.max(mx, floor); }
         comb.set(env2);
         // snap each beat to the sharpest matched-filter peak nearby
         const w = Math.round(0.08 * FS);
@@ -340,7 +384,7 @@ const DSP = (() => {
         bsig = principal(bandpass(ix, FS, 0.05, 2), bandpass(iy, FS, 0.05, 2));
       } else if (rs('az')) bsig = rs('az');
       const ihr = instantHR(r);
-      const br = bsig ? breathing(bsig, FS, r.t, ihr) : null;
+      const br = bsig ? breathing(bsig, FS, r.t, ihr, bsnd && bsnd.t) : null;
       const artifactS = Math.max(...envs.map(e => e.artifact));
       const cons = consistency(main.bp, beats, FS, 0.15, 0.45);
       mot = { p, r, tp, br, comb, dur, artifactS, mainCh: main.k, ihr, cons };
@@ -359,6 +403,11 @@ const DSP = (() => {
       res.quality.audio = round(aud.cons, 2);
       if (!res.durationS) res.durationS = round(ae.env.length / FS, 1);
     }
+    // the iPhone microphone often misses heart sounds entirely; only use sound that found most of the beats
+    if (aud) {
+      const expect = (mot ? mot.r.hr : aud.r.hr) / 60 * (aud.env.length / FS);
+      if (aud.r.beats < 0.6 * expect || aud.r.coverage < 0.5) { res.soundNote = 'The microphone did not pick up clear heart sounds, so heart rate comes from chest motion only.'; res.quality.audio = 0; aud = mot ? null : aud; }
+    }
     // choose the stronger heartbeat source for rhythm metrics
     const qm = mot ? mot.cons * Math.min(1, mot.r.beats / (mot.dur * 0.6)) : -1;
     const qa = aud ? aud.cons * Math.min(1, aud.r.beats / (aud.env.length / FS * 0.6)) : -1;
@@ -375,6 +424,7 @@ const DSP = (() => {
     M.rmssd = round(r.rmssd, 1); M.sdnn = round(r.sdnn, 1); M.pnn50 = round(r.pnn50, 1);
     M.irregPct = round(r.irregPct, 1); M.ectopic = r.ectopic; M.pauses = r.pauses;
     M.beats = r.beats; M.coverage = round(r.coverage, 2);
+    if (bsnd && Number.isFinite(bsnd.br)) M.brSound = round(bsnd.br, 1);
     if (mot && mot.br && mot.br.q >= 0.4) { M.br = round(mot.br.br, 1); M.brCV = round(mot.br.brCV, 1); M.breathPauseS = round(mot.br.pauseS, 0); M.rsa = round(mot.br.rsa, 1); }
     if (aud && aud.hs && aud.hs.s1s2 >= 150 && aud.hs.s1s2 <= 500 && !(disagree && src === mot)) { M.s1s2 = round(aud.hs.s1s2, 0); M.s2s1 = round(aud.hs.ratio, 2); }
     if (mot) M.beatAmp = round(Math.max(...mot.tp.tpl) - Math.min(...mot.tp.tpl), 4);
