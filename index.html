@@ -1144,7 +1144,7 @@ function plot(o) {
   if (x1 === x0) { x0 -= 1; x1 += 1; }
   const sx = v => L + (v - x0) / (x1 - x0) * (W - L - R), sy = v => T + (1 - (v - y0) / (y1 - y0)) * (H - T - Bm);
   let g = '';
-  if (!o.noY) for (const t of ticks(y0, y1, 3)) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${sy(t)}" y2="${sy(t)}"/><text x="${L - 6}" y="${sy(t) + 3}" text-anchor="end">${(o.yfmt || (v => v))(t)}</text>`;
+  if (!o.noY) for (const t of (yt => yt.length >= 2 ? yt : ticks(y0, y1, 6))(ticks(y0, y1, 3))) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${sy(t)}" y2="${sy(t)}"/><text x="${L - 6}" y="${sy(t) + 3}" text-anchor="end">${(o.yfmt || (v => v))(t)}</text>`;
   const xt = o.xticks ? o.xticks(x0, x1) : ticks(x0, x1, Math.max(2, Math.floor((W - L) / 80)));
   for (const t of xt) if (t >= x0 && t <= x1) g += `<text x="${sx(t)}" y="${H - 6}" text-anchor="middle">${(o.xfmt || (v => v))(t)}</text>`;
   g += `<line class="axis" x1="${L}" x2="${W - R}" y1="${H - Bm}" y2="${H - Bm}"/>`;
@@ -1348,19 +1348,23 @@ function renderTrends() {
     <div class="legend"><span style="color:var(--breath)"><i style="height:8px;opacity:.35"></i>your usual range</span><span style="color:var(--pulse)"><i style="height:8px;width:8px;border-radius:50%"></i>reading</span><span style="color:var(--warn)"><i style="height:8px;width:8px;border-radius:50%"></i>outside range</span></div>
     <div class="charts">${defs.map(([k, t]) => chartBox('t-' + k, t, k === 'shape' ? 'Higher is closer to your baseline waveform' : k === 'irregPct' ? '% of beats more than 12% longer or shorter than the one before. Breathing alone causes some.' : `${METRICS[k].unit}`)).join('')}</div>
   </section>`;
-  const t0 = list[0].ts, day = 864e5;
+  // readings are spaced evenly in the order taken; with several a day, a time-based axis bunches them up
+  const oneDay = new Date(list[0].ts).toDateString() === new Date(list[list.length - 1].ts).toDateString();
+  const lab = s => oneDay ? new Date(s.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : new Date(s.ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   for (const [k] of defs) {
     S.charts['t-' + k] = w => {
       const vals = list.map(s => [s, k === 'shape' ? shapeScore(s, B) * 100 : s.metrics?.[k]]).filter(([, v]) => Number.isFinite(v));
       if (!vals.length) return { svg: '<p class="small muted">Not measured in these readings.</p>' };
       const st = k === 'shape' ? null : B?.stats?.[k];
-      const pts = vals.map(([s, v]) => {
+      const pts = vals.map(([s, v], i) => {
         const out = st && (v > st.hi || v < st.lo) || (k === 'shape' && v < 70);
-        return [(s.ts - t0) / day, v, out ? 'var(--warn)' : 'var(--pulse)'];
+        return [i, v, out ? 'var(--warn)' : 'var(--pulse)'];
       });
-      const r = plot({ w, h: 150, series: [{ pts, color: 'var(--pulse)', dots: true, width: 1.5, emph: true }], band: st ? { lo: st.lo, hi: st.hi, mean: st.mean } : null, xfmt: v => 'day ' + Math.round(v + 1), xticks: (a, b) => ticks(a, b, 3).filter(v => Number.isInteger(v)), yfmt: v => Math.round(v * 10) / 10, label: k + ' over time' });
+      const maxLabels = Math.max(2, Math.floor((w - 40) / 70)), stepL = Math.max(1, Math.ceil((vals.length - 1) / (maxLabels - 1)));
+      const xt = []; for (let i = 0; i < vals.length; i += stepL) xt.push(i); if (xt[xt.length - 1] !== vals.length - 1 && vals.length > 1) { if (vals.length - 1 - xt[xt.length - 1] < stepL / 2) xt.pop(); xt.push(vals.length - 1); }
+      const r = plot({ w, h: 150, series: [{ pts, color: 'var(--pulse)', dots: true, width: 1.5, emph: true }], band: st ? { lo: st.lo, hi: st.hi, mean: st.mean } : null, x: vals.length > 1 ? [-0.3, vals.length - 0.7] : [-1, 1], xfmt: i => vals[i] ? lab(vals[i][0]) : '', xticks: () => xt, yfmt: v => Math.round(v * 10) / 10, label: k + ' over time' });
       const d = k === 'shape' ? 0 : METRICS[k].d;
-      r.hover = vals.map(([s, v], i) => ({ x: r.sx(pts[i][0]), y: 20, html: `${esc(new Date(s.ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))} · ${fmt(v, d)}${k === 'shape' ? '%' : ' ' + METRICS[k].unit}${(s.tags || []).length ? '<br>' + esc(s.tags.join(', ')) : ''}` }));
+      r.hover = vals.map(([s, v], i) => ({ x: r.sx(pts[i][0]), y: 20, html: `${esc(new Date(s.ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + new Date(s.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }))} · ${fmt(v, d)}${k === 'shape' ? '%' : ' ' + METRICS[k].unit}${(s.tags || []).length ? '<br>' + esc(s.tags.join(', ')) : ''}` }));
       return r;
     };
   }
