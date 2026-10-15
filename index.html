@@ -206,6 +206,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
         <button role="radio" data-dur="60" aria-checked="true">60 s</button><button role="radio" data-dur="90" aria-checked="false">90 s</button><button role="radio" data-dur="120" aria-checked="false">2 min</button>
       </div>
       <button class="go" id="btn-live">Start reading</button>
+      <div id="example-note" class="banner" hidden>Trends and Sessions show example readings for now, so you can see how it looks. They disappear when you save your first reading.</div>
       <div id="start-msg" class="banner warn" hidden></div>
       <details class="sim">
         <summary>Try a simulated reading</summary>
@@ -1140,6 +1141,7 @@ function renderResult(sess, unsaved) {
   const el = $('#result-panel'); el.hidden = false;
   S.charts = {};
   el.innerHTML = `
+    ${sess.example ? '<div class="banner">This is an example reading, not yours. Examples disappear once you save your first reading.</div>' : ''}
     <div class="row" style="justify-content:space-between">
       <div><h2>${unsaved ? 'New reading' : esc(dateStr(sess.ts))}</h2><span class="small muted">${esc(srcNote + agree)} · ${fmt(sess.durationS)} s · ${M.beats ?? '–'} beats${sess.example ? ' · example data' : ''}</span></div>
       <span class="pill ${q.grade || ''}">${q.grade || '–'} signal</span>
@@ -1166,7 +1168,7 @@ function renderResult(sess, unsaved) {
     <input type="text" id="note-in" placeholder="Note (optional)" value="${esc(sess.note || '')}" ${sess.example ? 'disabled' : ''}>
     <div class="row" style="justify-content:space-between">
       <label class="check"><input type="checkbox" id="base-in" ${sess.baseline ? 'checked' : ''} ${sess.example ? 'disabled' : ''}> Use as baseline</label>
-      <div class="row">${unsaved ? '<button class="quiet" id="btn-discard">Discard</button><button class="primary" id="btn-save">Save reading</button>' : sess.example ? '<span class="small muted">Example reading</span>' : '<button id="btn-close">Done</button>'}</div>
+      <div class="row">${unsaved ? '<button class="quiet" id="btn-discard">Discard</button><button class="primary" id="btn-save">Save reading</button>' : sess.example ? '<button id="btn-close">Done</button>' : '<button id="btn-close">Done</button>'}</div>
     </div>`;
 
   // charts
@@ -1225,6 +1227,7 @@ function persist(sess) {
   if (i >= 0) S.sessions[i] = sess; else S.sessions.push(sess);
   S.sessions.sort((a, b) => a.ts - b.ts);
   saveLocal();
+  $('#example-note').hidden = true;
   if (S.pendingRaw && S.pendingRaw.id === sess.id) { rawPut(sess.id, S.pendingRaw.raw); S.pendingRaw = null; }
 }
 function flash(msg) { const m = $('#start-msg'); m.className = 'banner'; m.textContent = msg; m.hidden = false; setTimeout(() => { m.hidden = true; }, 2500); }
@@ -1281,7 +1284,7 @@ function renderSessions() {
         <div class="acts"><button class="quiet" data-open="${esc(s.id)}">Open</button>${ex ? '' : `<button class="quiet" data-del="${esc(s.id)}">Delete</button>`}</div>
       </div>`).join('')}</div>
   </section>`;
-  el.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { const s = shown().find(x => x.id === b.dataset.open); if (s) { setTab('record'); $('#start-panel').hidden = true; renderResult(s, false); scrollTo(0, 0); } });
+  el.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { const s = shown().find(x => x.id === b.dataset.open); if (s) { S.opening = true; setTab('record'); S.opening = false; $('#start-panel').hidden = true; renderResult(s, false); scrollTo(0, 0); } });
   el.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
     if (b.dataset.armed) { const id = b.dataset.del; S.sessions = S.sessions.filter(s => s.id !== id); saveLocal(); rawDel(id); renderSessions(); return; }
     b.dataset.armed = '1'; b.textContent = 'Tap to delete'; b.style.color = 'var(--alert)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Delete'; b.style.color = ''; } }, 3000);
@@ -1320,6 +1323,8 @@ function renderSessions() {
 function alertMsg(t) { const el = $('#view-sessions .panel'); if (!el) return; let b = el.querySelector('.banner.note'); if (!b) { b = document.createElement('div'); b.className = 'banner note'; el.insertBefore(b, el.children[1]); } b.textContent = t; }
 
 function setTab(t) {
+  // going back to Record closes a reading opened from Sessions, so Start is always there; an unsaved new reading stays
+  if (t === 'record' && S.current && (S.current.example || S.sessions.some(s => s.id === S.current.id)) && !S.opening) { $('#result-panel').hidden = true; S.current = null; $('#start-panel').hidden = false; }
   S.tab = t;
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
   document.querySelectorAll('[data-view]').forEach(v => v.hidden = v.dataset.view !== t);
@@ -1327,6 +1332,7 @@ function setTab(t) {
   render();
 }
 function render() {
+  $('#example-note').hidden = S.sessions.length > 0;
   if (S.tab === 'trends') renderTrends();
   else if (S.tab === 'sessions') renderSessions();
   else if (S.tab === 'record' && S.current && !$('#result-panel').hidden) renderResult(S.current, !S.sessions.some(s => s.id === S.current.id) && !S.current.example);
@@ -1549,6 +1555,7 @@ document.addEventListener('click', async e => { if (!e.target.closest('.btn-inst
 $('#home-steps').innerHTML = `<p class="small muted">${HOME_WHY}</p><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}`;
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
+$('#example-note').hidden = S.sessions.length > 0;
 // open on a realistic working state: the latest reading (an example until you have your own)
 const latest = shown()[shown().length - 1];
 if (latest && S.tab === 'record') renderResult(latest, false);
