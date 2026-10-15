@@ -171,6 +171,26 @@ const DSP = (() => {
     let ectopic = 0;
     for (let i = 0; i + 1 < ibi.length; i++) if (valid[i] && ibi[i] < 0.8 * lm[i] && ibi[i + 1] > 1.1 * lm[i]) { ectopic++; i++; }
     const pauses = ibi.filter(v => v > Math.max(2.0, 1.8 * med) && v < 4).length;
+    // atrial-fibrillation-style irregularity (Dash et al. 2009): big beat-to-beat changes that are also random,
+    // unlike breathing-linked swings, which rise and fall smoothly over several beats
+    const rr = [];
+    for (let i = 0; i < ibi.length; i++) {
+      if (!valid[i]) continue;
+      if (i + 1 < ibi.length && ibi[i] < 0.8 * lm[i] && ibi[i + 1] > 1.1 * lm[i]) { i++; continue; }
+      rr.push(ibi[i]);
+    }
+    let af = null;
+    if (rr.length >= 40) {
+      let s2 = 0, tp = 0;
+      for (let i = 1; i < rr.length; i++) s2 += (rr[i] - rr[i - 1]) ** 2;
+      for (let i = 1; i + 1 < rr.length; i++) if ((rr[i] - rr[i - 1]) * (rr[i + 1] - rr[i]) < 0) tp++;
+      const nrmssd = Math.sqrt(s2 / (rr.length - 1)) / mean(rr), tpr = tp / (rr.length - 2);
+      const srt = rr.slice().sort((a, b) => a - b).slice(8, -8), lo = srt[0], hi = srt[srt.length - 1], h = new Array(16).fill(0);
+      for (const v of srt) h[Math.min(15, Math.floor((v - lo) / ((hi - lo) || 1) * 16))]++;
+      const she = -h.filter(Boolean).reduce((a, c) => a + c / srt.length * Math.log(c / srt.length), 0) / Math.log(16);
+      // a random sequence turns about 2/3 of the time; breathing-linked swings turn far less often (~0.3)
+      af = { nrmssd, tpr, she, likely: nrmssd >= 0.1 && she >= 0.7 && tpr >= 0.5 && tpr <= 0.8 };
+    }
     const covered = clean.reduce((a, b) => a + b, 0) / dur;
     return {
       t, ibi,
@@ -179,7 +199,8 @@ const DSP = (() => {
       sdnn: clean.length > 4 ? std(clean) * 1000 : NaN,
       pnn50: nd > 3 ? 100 * nn50 / nd : NaN,
       irregPct: nb > 5 ? 100 * big / nb : NaN,
-      ectopic, pauses, coverage: Math.min(1, covered), beats: t.length
+      ectopic, pauses, coverage: Math.min(1, covered), beats: t.length,
+      afLike: af ? af.likely : null, nrmssd: af ? af.nrmssd : NaN, tpr: af ? af.tpr : NaN, rrEntropy: af ? af.she : NaN
     };
   }
 
@@ -423,6 +444,7 @@ const DSP = (() => {
     M.hrSound = aud ? round(aud.r.hr, 1) : null;
     M.rmssd = round(r.rmssd, 1); M.sdnn = round(r.sdnn, 1); M.pnn50 = round(r.pnn50, 1);
     M.irregPct = round(r.irregPct, 1); M.ectopic = r.ectopic; M.pauses = r.pauses;
+    M.afLike = r.afLike; M.nrmssd = round(r.nrmssd, 3); M.tpr = round(r.tpr, 2); M.rrEntropy = round(r.rrEntropy, 2);
     M.beats = r.beats; M.coverage = round(r.coverage, 2);
     if (bsnd && Number.isFinite(bsnd.br)) M.brSound = round(bsnd.br, 1);
     if (mot && mot.br && mot.br.q >= 0.4) { M.br = round(mot.br.br, 1); M.brCV = round(mot.br.brCV, 1); M.breathPauseS = round(mot.br.pauseS, 0); M.rsa = round(mot.br.rsa, 1); }
@@ -518,6 +540,6 @@ const DSP = (() => {
     return best;
   }
 
-  return { analyze, simulate, shapeMatch, quickHR, median, mean, std, FS };
+  return { analyze, rhythm, simulate, shapeMatch, quickHR, median, mean, std, FS };
 })();
 if (typeof module !== 'undefined') module.exports = DSP;

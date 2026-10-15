@@ -68,6 +68,9 @@ input[type=text], select, textarea { font: inherit; color: var(--ink); backgroun
 @media (max-width: 520px) { .readouts { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
 .readout { background: var(--panel); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0 }
 .readout .k { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted) }
+.readout .mean { font-size: .78rem; line-height: 1.35; color: var(--muted); margin-top: 4px }
+.plain { border-radius: 12px; padding: 12px 14px; background: var(--breath-soft); display: flex; flex-direction: column; gap: 4px }
+.plain p { margin: 0; line-height: 1.5 }
 .readout .v { font: 500 1.6rem/1.2 var(--mono); font-variant-numeric: tabular-nums }
 .readout .v small { font-size: .8rem; color: var(--muted); margin-left: 3px }
 .readout .d { font-size: .78rem; font-family: var(--mono); color: var(--muted) }
@@ -163,6 +166,11 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px }
 .welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
 .welcome .go { margin-top: auto }
+.keep { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px }
+.keep summary { font-weight: 600; cursor: pointer }
+.keep ol { margin: 8px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px }
+.keep .row { margin-top: 10px }
+.share-ic { display: inline-block; vertical-align: -3px; color: var(--breath) }
 .install { display: flex; gap: 14px; align-items: flex-start }
 .install img { width: 56px; height: 56px; border-radius: 13px; flex: none }
 .install ol { margin: 6px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px }
@@ -187,23 +195,6 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   </header>
 
   <main id="view-record" class="wrap" data-view="record">
-    <section class="panel install" id="install-panel" hidden>
-      <img src="icons/icon-180.png" alt="">
-      <div>
-        <h2 style="font-size:1.1rem">Add Sternum to your Home Screen</h2>
-        <p class="small muted" style="margin:2px 0 0">You get the heart icon, it opens full screen like an app, and Safari keeps your readings instead of clearing them after 7 days unused.</p>
-        <ol class="small" id="install-ios">
-          <li>In Safari, tap the Share button <svg class="share-ic" width="17" height="17" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> (bottom of the screen, or top right on iPad).</li>
-          <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
-          <li>Open Sternum from its new icon from now on.</li>
-        </ol>
-        <ol class="small" id="install-android" hidden>
-          <li>In Chrome, tap the <b>⋮</b> menu at the top right.</li>
-          <li>Tap <b>Add to Home screen</b> or <b>Install app</b>, then <b>Install</b>.</li>
-        </ol>
-        <div class="row"><button class="go" id="btn-install" hidden style="min-height:44px;padding:8px 18px;font-size:1rem">Install</button><button class="quiet" id="btn-install-hide">Not now</button></div>
-      </div>
-    </section>
     <section class="panel start" id="start-panel">
       <h2>Take a reading</h2>
       <ol class="steps">
@@ -265,7 +256,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <section>
         <h2>How to take a good reading</h2>
         <ol>
-          <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on the bed.</li>
+          <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on the bed and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
           <li>Take the phone out of its case and lay it face up, flat and lengthwise on the lower half of your breastbone. Put the bottom edge (where the microphone is) slightly toward your left side.</li>
           <li>Quiet room, phone on Do Not Disturb. Breathe normally, don't talk, keep still.</li>
           <li>Tap Start, settle during the 10-second countdown, and stay still until the two beeps. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
@@ -289,10 +280,21 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       </section>
       <div class="sep"></div>
       <section>
+        <h2>What the numbers mean</h2>
+        <dl class="signs"><div><dt>Heart rate</dt><dd>Beats per minute while lying still. 50 to 100 is normal; fit people often sit in the 40s or 50s. A rise of 5 to 10 over your usual for a few days is the most common sign of illness, poor sleep or alcohol.</dd></div><div><dt>HRV</dt><dd>How much the gap between beats varies. Higher usually means rested and relaxed. It is very personal and drops with age, so only compare it with your own readings, and trust a trend over several days more than one low day.</dd></div><div><dt>Breathing</dt><dd>Breaths per minute. 12 to 20 is normal when awake; 8 to 12 is common lying relaxed. Over 20 at rest is fast.</dd></div><div><dt>Rhythm</dt><dd>Your heart speeds up a little when you breathe in and slows when you breathe out. That is normal. Sternum looks for gaps that jump around at random instead, which is what atrial fibrillation looks like.</dd></div><div><dt>Breath swing</dt><dd>How much your heart rate rises and falls within each breath. A clear swing (5+ bpm) means a relaxed, responsive nervous system; it gets smaller with age, stress and faster breathing.</dd></div><div><dt>Early beats</dt><dd>A beat that comes early, then a longer pause. Nearly everyone has some. Lots of them, or ones you feel with dizziness, are worth a check.</dd></div></dl>
+        <p class="small muted">Slow breathing makes both HRV and breath swing bigger, so compare readings taken the same way.</p>
+      </section>
+      <div class="sep"></div>
+      <section>
         <h2>Signs it can graph</h2>
         <p class="small muted">These are wellness flags measured against your own baseline, not diagnoses.</p>
-        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Often harmless; persistent irregularity can be atrial fibrillation</dd><dd class="when">Shows when: Many big beat-to-beat jumps, in a clean recording</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>A missed or blocked beat, or a recording dropout</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 10 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
+        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 10 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
         <div class="banner alert">Chest pain, fainting, severe breathlessness or a racing heart that won't settle needs a doctor or emergency services, not a recording. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</div>
+      </section>
+      <div class="sep"></div>
+      <section>
+        <h2 id="home">Add it to your Home Screen</h2>
+        <div id="home-steps"></div>
       </section>
       <div class="sep"></div>
       <section>
@@ -307,9 +309,8 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <div class="sep"></div>
       <section>
         <h2 id="privacy">How your data is kept</h2>
-        <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can send it to Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup or to attach your readings in the Claude chat.</p>
+        <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can share it in a chat with Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup, or attach the file to a chat with Claude to talk through your readings.</p>
         <p class="small muted">The page loads its fonts from Google Fonts; no readings go with that request. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
-        <button class="quiet" id="btn-install-show" style="align-self:flex-start;padding-left:0">How to add it to your Home Screen</button>
         <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
       </section>
     </article>
@@ -330,6 +331,10 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (v, d = 0) => Number.isFinite(v) ? v.toFixed(d) : '–';
 const LS = 'sternum.sessions.v1';
+const HOME_IOS = `<ol class="small"><li>Open this page in <b>Safari</b>.</li><li>Tap the <b>⋯</b> button just to the right of the address bar. On older iOS, tap the Share button <svg class="share-ic" width="17" height="17" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> instead.</li><li>Tap <b>Share</b> if you see it, then scroll down and tap <b>Add to Home Screen</b> (it can be under <b>More</b>).</li><li>Leave <b>Open as Web App</b> on, tap <b>Add</b>, and from now on open Sternum from its heart icon.</li></ol>`, HOME_ANDROID = `<ol class="small"><li>In <b>Chrome</b>, tap the <b>⋮</b> menu at the top right.</li><li>Tap <b>Add to Home screen</b> or <b>Install app</b>, then <b>Install</b>.</li></ol>`;
+const HOME_WHY = 'Safari deletes a website’s saved data if you don’t visit it for 7 days. Readings saved by a Home Screen app are kept, and you get the heart icon and a full-screen app.';
+let installEvt = null;
+const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
 const TAGS = ['Morning', 'Evening', 'Coffee', 'Alcohol last night', 'Short sleep', 'After exercise', 'Feeling unwell', 'Stressed'];
 
 const S = { sessions: [], tab: 'record', current: null, pendingRaw: null, charts: {} };
@@ -399,6 +404,7 @@ function rawForExport(r) {
   return o;
 }
 function saveFile(file) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+function homeHidden() { try { return !!localStorage.getItem('sternum.homeHidden'); } catch { return false; } }
 function shown() { return S.sessions.length ? S.sessions : EXAMPLES; }
 
 /* ---------- baseline & flags ---------- */
@@ -406,7 +412,7 @@ const METRICS = {
   hr: { label: 'Heart rate', unit: 'bpm', d: 0, floor: () => 5, bad: 'up' },
   rmssd: { label: 'HRV (RMSSD)', unit: 'ms', d: 0, floor: m => Math.max(6, 0.25 * m), bad: 'down' },
   br: { label: 'Breathing', unit: '/min', d: 1, floor: () => 2, bad: 'up' },
-  irregPct: { label: 'Irregularity', unit: '%', d: 0, floor: () => 8, bad: 'up' },
+  irregPct: { label: 'Beat-to-beat jumps', unit: '%', d: 0, floor: () => 8, bad: 'up' },
   rsa: { label: 'Breath swing', unit: 'bpm', d: 1, floor: m => Math.max(2, 0.3 * m), bad: 'down' },
   s1s2: { label: 'S1–S2', unit: 'ms', d: 0, floor: () => 20, bad: null },
   ectopic: { label: 'Extra beats', unit: '', d: 0, floor: () => 2, bad: 'up' }
@@ -454,16 +460,18 @@ function flagsFor(s, B) {
     if (M.breathPauseS >= 10) F.push(['watch', `Breathing paused for about ${fmt(M.breathPauseS)} s`, 'No chest movement for 10 s or more. Ignore it if you held your breath; repeated pauses during rest are worth mentioning to a doctor.']);
     if (clean) {
       const irr = M.irregPct, baseIrr = st.irregPct?.mean;
-      if (Number.isFinite(irr) && irr >= 35 && (!Number.isFinite(baseIrr) || irr > baseIrr + 15)) F.push(['see', 'Beat timing was irregular', `${fmt(irr)}% of consecutive beats differed by more than 12%. Often harmless, but if this keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).`]);
-      if (M.ectopic >= 3) F.push([M.ectopic >= 8 ? 'see' : 'watch', `${M.ectopic} early beats`, 'An early beat followed by a longer pause. Occasional ones are very common (caffeine, stress, fatigue); many, or with symptoms, deserve a check.']);
-      if (M.pauses > 0) F.push(['watch', `${M.pauses} gap${M.pauses > 1 ? 's' : ''} over 2 s between beats`, 'Could be a skipped beat or a dropout in the recording. Repeat the reading; if it recurs, mention it to a doctor.']);
+      // newer readings test for random (atrial-fibrillation-like) irregularity; older ones only stored the jump percentage
+      const irregular = typeof M.afLike === 'boolean' ? M.afLike : Number.isFinite(irr) && irr >= 35 && (!Number.isFinite(baseIrr) || irr > baseIrr + 15);
+      if (irregular) F.push(['see', 'Irregular heartbeat pattern', 'The gaps between beats were large and random, not the smooth speeding up and slowing down that breathing causes. That pattern can mean atrial fibrillation, but movement and extra beats can mimic it. Take another reading. If it shows again, or you feel palpitations, breathless or dizzy, get an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).']);
+      if (M.ectopic >= 3) F.push([M.ectopic >= 8 ? 'see' : 'watch', `${M.ectopic} early beats`, 'A beat that came early, then a longer pause. A few are very common (caffeine, stress, tiredness). Lots of them, or ones you can feel with dizziness or breathlessness, deserve a check. The phone can miss weak extra beats, so the real count may be higher.']);
+      if (M.pauses > 0) F.push(['watch', `${M.pauses} gap${M.pauses > 1 ? 's' : ''} over 2 s between beats`, 'Most often the phone lost a beat because you moved. Repeat the reading. If it keeps happening, or comes with dizziness or fainting, see a doctor soon.']);
     }
     const sh = shapeScore(s, B);
     if (Number.isFinite(sh) && sh < 0.7) F.push(['info', 'Beat shape differs from your baseline', `Match ${fmt(sh * 100)}%. Usually a different phone position; place it at the same spot each time.`]);
     if (st.s1s2 && Number.isFinite(M.s1s2) && Math.abs(M.s1s2 - st.s1s2.mean) > 40) F.push(['info', `Heart-sound gap ${M.s1s2 > st.s1s2.mean ? 'longer' : 'shorter'} than baseline`, `S1–S2 was ${fmt(M.s1s2)} ms against ${fmt(st.s1s2.mean)} ms. It shifts with heart rate, so compare readings at similar rates.`]);
     if (s.agree === false) F.push(['info', 'Motion and sound disagreed on heart rate', `Motion said ${fmt(M.hrMotion)} bpm, sound said ${fmt(M.hrSound)} bpm. Trust this reading less.`]);
   }
-  if (!F.length) F.push(['ok', B ? 'Within your usual range' : 'Nothing stood out', B ? 'Heart rate, HRV, breathing and rhythm all sit inside your baseline band.' : 'Save a few calm readings to build a baseline; comparisons start after that.']);
+  if (!F.length) F.push(['ok', B ? 'Within your usual range' : 'Nothing stood out', (B ? 'Heart rate, HRV, breathing and rhythm all sit inside your usual range.' : 'Save a few calm readings to build a baseline; comparisons start after that.') + ' This can’t rule out heart problems: a phone can’t see your heart’s electrical signal, blood pressure or oxygen.']);
   return F;
 }
 
@@ -531,15 +539,49 @@ function deltaHtml(k, v, B) {
   const bad = out && ((m.bad === 'up' && d > 0) || (m.bad === 'down' && d < 0));
   return `<span class="d ${bad ? 'up-bad' : out ? '' : 'ok'}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d), m.d)} vs ${fmt(st.mean, m.d)}</span>`;
 }
-function readout(k, v, B, label) {
+function readout(k, v, B, label, mean) {
   const m = METRICS[k];
-  return `<div class="readout"><span class="k">${esc(label || m.label)}</span><span class="v">${fmt(v, m.d)}<small>${m.unit}</small></span>${deltaHtml(k, v, B)}</div>`;
+  return `<div class="readout"><span class="k">${esc(label || m.label)}</span><span class="v">${fmt(v, m.d)}<small>${m.unit}</small></span>${deltaHtml(k, v, B)}${mean ? `<span class="mean">${esc(mean)}</span>` : ''}</div>`;
 }
 
+function rel(k, v, B) {
+  const st = B?.stats?.[k]; if (!st || !Number.isFinite(v)) return null;
+  return v > st.hi ? 'higher' : v < st.lo ? 'lower' : 'usual';
+}
+function plainEnglish(sess, B) {
+  const M = sess.metrics || {}, poor = sess.quality?.grade === 'poor', out = {};
+  const hr = M.hr, hrR = rel('hr', hr, B);
+  out.hr = !Number.isFinite(hr) ? '' : (hr < 40 ? 'Very slow. Normal for some athletes; otherwise worth checking.' : hr < 50 ? 'Slow. Common and healthy in fit people.' : hr <= 100 ? 'A normal resting rate (50 to 100).' : 'Fast for someone lying still.') + (hrR === 'usual' ? ' About your usual.' : hrR ? ` ${hrR === 'higher' ? 'Higher' : 'Lower'} than your usual.` : '');
+  const hv = M.rmssd, hvR = rel('rmssd', hv, B);
+  out.rmssd = !Number.isFinite(hv) ? '' : 'How much the gap between beats varies. Higher usually means rested. ' + (hvR === 'usual' ? 'About your usual.' : hvR === 'lower' ? 'Lower than usual: often after poor sleep, alcohol, hard exercise or a coming cold.' : hvR === 'higher' ? 'Higher than usual, usually a sign of being well rested.' : 'Very personal: most adults read 20 to 100 ms, less with age. Compare with your own readings.');
+  const br = M.br;
+  out.br = !Number.isFinite(br) ? 'Not measured: the phone could not see your chest rise and fall clearly.' : br < 8 ? 'Very slow, as in deep relaxation.' : br < 12 ? 'Slow and relaxed, common lying down.' : br <= 20 ? 'Normal (12 to 20).' : br < 25 ? 'A bit fast for rest.' : 'Fast for rest.';
+  let rw, rm;
+  if (poor || !Number.isFinite(hr)) { rw = '–'; rm = 'Too noisy to judge.'; }
+  else if (M.afLike || (typeof M.afLike !== 'boolean' && M.irregPct >= 35)) { rw = 'Irregular'; rm = 'The gaps between beats jumped around at random. See the note below.'; }
+  else if (M.ectopic >= 3) { rw = 'Mostly regular'; rm = `${M.ectopic} early beats, each followed by a catch-up pause. Usually harmless.`; }
+  else if (M.rsa >= 4 || M.irregPct > 10) { rw = 'Regular'; rm = 'Speeds up as you breathe in and slows as you breathe out. That is normal and healthy.'; }
+  else { rw = 'Regular'; rm = 'Steady, even beats.'; }
+  out.rhythmWord = rw; out.rhythm = rm;
+  out.rsa = !Number.isFinite(M.rsa) ? '' : M.rsa >= 5 ? 'How much your heart rate rises and falls with each breath. A clear swing: a relaxed, responsive system.' : M.rsa >= 2 ? 'How much your heart rate rises and falls with each breath. A modest swing.' : 'How much your heart rate rises and falls with each breath. Small, which is common with age, fast breathing or stress.';
+  out.ectopic = !Number.isFinite(M.ectopic) ? '' : M.ectopic === 0 ? 'None found.' : M.ectopic < 3 ? 'A couple. Almost everyone has some.' : 'Beats that came early, then paused.';
+  if (poor) { out.summary = 'The recording was too noisy to say much. Lie still on your back, phone flat on the lower breastbone, and try again.'; return out; }
+  const parts = [];
+  if (Number.isFinite(hr)) parts.push(`Your heart beat about ${fmt(hr)} times a minute, ${hr < 50 ? 'which is slow but common in fit people' : hr <= 100 ? 'a normal resting rate' : 'which is fast for rest'}${hrR === 'higher' ? ' and higher than your usual' : hrR === 'lower' ? ' and lower than your usual' : ''}.`);
+  if (rw === 'Irregular') parts.push('The rhythm looked irregular, so take another reading and read the note below.');
+  else if (rw === 'Mostly regular') parts.push(`The rhythm was regular apart from ${M.ectopic} early beats, which are usually harmless.`);
+  else if (rw === 'Regular') parts.push(M.rsa >= 4 || M.irregPct > 10 ? 'The rhythm was regular, speeding up and slowing down with your breathing as a healthy heart does.' : 'The rhythm was steady and regular.');
+  if (Number.isFinite(br)) parts.push(`You took about ${fmt(br)} breaths a minute, ${br < 12 ? 'slow and relaxed' : br <= 20 ? 'a normal rate' : 'faster than usual for rest'}.`);
+  if (hvR === 'lower') parts.push('Your HRV was lower than usual, a sign your body may be under some strain today (poor sleep, alcohol, exercise or a coming illness).');
+  else if (hvR === 'usual') parts.push('Your HRV was about your usual, so nothing suggests extra strain today.');
+  else if (hvR === 'higher') parts.push('Your HRV was higher than usual, which usually means you are well rested.');
+  out.summary = parts.join(' ');
+  return out;
+}
 function renderResult(sess, unsaved) {
   S.current = sess;
   const list = shown(), B = baseline(S.sessions.length ? S.sessions : EXAMPLES, sess.id), M = sess.metrics, q = sess.quality || {};
-  const flags = flagsFor(sess, B);
+  const flags = flagsFor(sess, B), P = plainEnglish(sess, B);
   const srcNote = sess.hrSource === 'sound' ? 'Heart rate from heart sounds' : 'Heart rate from chest motion';
   const agree = sess.agree === true ? '; motion and sound agree' : '';
   const brS = M.brSound, brNote = Number.isFinite(brS) && Number.isFinite(M.br) ? (Math.abs(brS - M.br) <= 2 ? `Breathing confirmed by sound (${fmt(brS, 1)}/min)` : `Breathing by sound: ${fmt(brS, 1)}/min`) : '';
@@ -550,10 +592,13 @@ function renderResult(sess, unsaved) {
       <div><h2>${unsaved ? 'New reading' : esc(dateStr(sess.ts))}</h2><span class="small muted">${esc(srcNote + agree)} · ${fmt(sess.durationS)} s · ${M.beats ?? '–'} beats${sess.example ? ' · example data' : ''}</span></div>
       <span class="pill ${q.grade || ''}">${q.grade || '–'} signal</span>
     </div>
+    <div class="plain"><b>In plain English</b><p>${esc(P.summary)}</p></div>
     <div class="readouts">
-      ${readout('hr', M.hr, B)}${readout('rmssd', M.rmssd, B)}${readout('br', M.br, B)}
-      ${readout('irregPct', M.irregPct, B)}${readout('rsa', M.rsa, B)}${Number.isFinite(M.s1s2) ? readout('s1s2', M.s1s2, B) : readout('ectopic', M.ectopic, B)}
+      ${readout('hr', M.hr, B, 'Heart rate', P.hr)}${readout('rmssd', M.rmssd, B, 'HRV', P.rmssd)}${readout('br', M.br, B, 'Breathing', P.br)}
+      <div class="readout"><span class="k">Rhythm</span><span class="v" style="font-size:1.25rem">${esc(P.rhythmWord)}</span><span class="mean">${esc(P.rhythm)}</span></div>
+      ${readout('rsa', M.rsa, B, 'Breath swing', P.rsa)}${readout('ectopic', M.ectopic, B, 'Early beats', P.ectopic)}
     </div>
+    <p class="small muted">HRV is RMSSD: the typical change in milliseconds from one beat gap to the next. Breath swing is how many beats per minute your heart rate rises and falls within each breath.${Number.isFinite(M.s1s2) ? ` Heart-sound gap (S1 to S2, roughly how long each squeeze lasts): ${fmt(M.s1s2)} ms.` : ''}</p>
     <div class="flags">${flags.map(([lv, t, p]) => `<div class="flag ${lv}"><span class="ic">${lv === 'ok' ? '✓' : lv === 'info' ? 'i' : '!'}</span><div><b>${esc(t)}</b><p>${esc(p)}</p></div></div>`).join('')}</div>
     <div class="charts">
       ${chartBox('c-ibi', 'Beat-to-beat intervals', 'Each dot is one beat; steady rhythm makes a smooth wave that follows your breathing', '', true)}
@@ -637,12 +682,12 @@ function renderTrends() {
   S.charts = {};
   if (!list.length) { el.innerHTML = '<section class="panel"><h2>No readings yet</h2><p class="muted">Take a reading on the Record tab. Trends appear once you have two or more.</p></section>'; return; }
   const ex = !S.sessions.length;
-  const defs = [['hr', 'Resting heart rate'], ['rmssd', 'Heart rate variability (RMSSD)'], ['br', 'Breathing rate'], ['irregPct', 'Rhythm irregularity'], ['rsa', 'Breath-linked heart swing'], ['s1s2', 'S1–S2 interval'], ['shape', 'Beat shape match with baseline']];
+  const defs = [['hr', 'Resting heart rate'], ['rmssd', 'Heart rate variability (RMSSD)'], ['br', 'Breathing rate'], ['irregPct', 'Beat-to-beat jumps'], ['rsa', 'Breath-linked heart swing'], ['s1s2', 'S1–S2 interval'], ['shape', 'Beat shape match with baseline']];
   el.innerHTML = `<section class="panel">
     ${ex ? '<div class="banner">These are example readings so you can see the layout. They disappear when you save your first real reading.</div>' : ''}
     <div class="row" style="justify-content:space-between"><h2>Trends</h2><span class="small muted">${B ? `Baseline: ${B.base.length} reading${B.base.length > 1 ? 's' : ''}${B.auto ? ' (first good readings)' : ''}` : 'No baseline yet'}</span></div>
     <div class="legend"><span style="color:var(--breath)"><i style="height:8px;opacity:.35"></i>your usual range</span><span style="color:var(--pulse)"><i style="height:8px;width:8px;border-radius:50%"></i>reading</span><span style="color:var(--warn)"><i style="height:8px;width:8px;border-radius:50%"></i>outside range</span></div>
-    <div class="charts">${defs.map(([k, t]) => chartBox('t-' + k, t, k === 'shape' ? 'Higher is closer to your baseline waveform' : `${METRICS[k].unit}`)).join('')}</div>
+    <div class="charts">${defs.map(([k, t]) => chartBox('t-' + k, t, k === 'shape' ? 'Higher is closer to your baseline waveform' : k === 'irregPct' ? '% of beats more than 12% longer or shorter than the one before. Breathing alone causes some.' : `${METRICS[k].unit}`)).join('')}</div>
   </section>`;
   const t0 = list[0].ts, day = 864e5;
   for (const [k] of defs) {
@@ -669,12 +714,13 @@ function renderSessions() {
     <div class="row" style="justify-content:space-between"><h2>Sessions</h2><div class="row"><input type="file" id="backup-in" accept=".json,application/json" hidden><button class="quiet" id="btn-restore">Import backup</button></div></div>
     ${ex ? '<div class="banner">Example readings shown. Your own readings will replace them.</div>' : ''}
     <div class="share">
-      <div><b>Export your readings</b><p class="small muted">Saves one file with all your readings. Attach it in the Claude project chat to have them checked, or keep it as a backup.</p></div>
+      <div><b>Export your readings</b><p class="small muted">Saves one file with all your readings. Keep it as a backup, or attach it to a chat with Claude and ask what your readings mean. The file explains itself, so any Claude chat can read it.</p></div>
       <label class="check"><input type="checkbox" id="raw-in" checked> Include raw sensor data from the last 3 readings</label>
       <div class="row"><button class="primary" id="btn-save-file" ${ex ? 'disabled' : ''}>Save file</button><button id="btn-share" ${ex ? 'disabled' : ''}>Share…</button><button id="btn-send" hidden>Open share sheet</button></div>
       <span class="small muted" id="share-note"></span>
     </div>
     <span class="small muted">Saved on this phone only. Export a backup now and then.</span>
+    ${standalone || homeHidden() ? '' : `<details class="keep"><summary>Want to keep your data on this ${/Android/i.test(navigator.userAgent) ? 'phone' : 'iPhone'}?</summary><p class="small muted">${HOME_WHY}</p>${/Android/i.test(navigator.userAgent) ? HOME_ANDROID : HOME_IOS}<div class="row"><button class="primary btn-install" hidden>Install</button><button class="quiet" id="btn-home-hide">Hide this</button></div></details>`}
     <div class="list">${list.map(s => `
       <div class="item">
         <div><span class="when">${esc(dateStr(s.ts))}</span>${s.baseline ? '<span class="base-mark">baseline</span>' : ''}
@@ -688,6 +734,8 @@ function renderSessions() {
     if (b.dataset.armed) { const id = b.dataset.del; S.sessions = S.sessions.filter(s => s.id !== id); saveLocal(); rawDel(id); renderSessions(); return; }
     b.dataset.armed = '1'; b.textContent = 'Tap to delete'; b.style.color = 'var(--alert)'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = 'Delete'; b.style.color = ''; } }, 3000);
   });
+  const hh = $('#btn-home-hide'); if (hh) hh.onclick = () => { try { localStorage.setItem('sternum.homeHidden', '1'); } catch { } renderSessions(); };
+  if (installEvt) el.querySelectorAll('.btn-install').forEach(b => b.hidden = false);
   let prepared = null;
   const build = async () => {
     const note = $('#share-note'); note.textContent = 'Preparing…';
@@ -942,17 +990,11 @@ S.sessions = loadLocal();
 const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
 $('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
-$('#btn-install-show').onclick = () => { const a = /Android/i.test(navigator.userAgent); $('#install-panel').hidden = false; $('#install-ios').hidden = a; $('#install-android').hidden = !a; setTab('record'); scrollTo(0, 0); };
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
-const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-const android = /Android/i.test(navigator.userAgent);
-let installHidden = false; try { installHidden = !!localStorage.getItem('sternum.installHidden'); } catch { }
-if (!standalone && !installHidden) { $('#install-panel').hidden = false; $('#install-ios').hidden = android; $('#install-android').hidden = !android; }
-$('#btn-install-hide').onclick = () => { $('#install-panel').hidden = true; try { localStorage.setItem('sternum.installHidden', '1'); } catch { } };
-let installEvt = null;
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#btn-install').hidden = false; });
-$('#btn-install').onclick = async () => { if (!installEvt) return; installEvt.prompt(); const c = await installEvt.userChoice.catch(() => null); installEvt = null; $('#btn-install').hidden = true; if (c && c.outcome === 'accepted') $('#install-panel').hidden = true; };
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
+document.addEventListener('click', async e => { if (!e.target.closest('.btn-install') || !installEvt) return; installEvt.prompt(); await installEvt.userChoice.catch(() => null); installEvt = null; document.querySelectorAll('.btn-install').forEach(b => b.hidden = true); });
+$('#home-steps').innerHTML = `<p class="small muted">${HOME_WHY}</p><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}`;
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 // open on a realistic working state: the latest reading (an example until you have your own)
