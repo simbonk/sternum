@@ -1003,7 +1003,7 @@ function rawForExport(r) {
 }
 function saveFile(file) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
 // fill in the Google Form link once it exists; until then the card says it's coming
-const FEEDBACK_URL = '';
+const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdNueyFCBLw2qdhyYZbCjumkFlLopR5qgpJE_-AiV5V809osw/viewform';
 function todoDone(k) { try { return !!localStorage.getItem('sternum.todo.' + k); } catch { return false; } }
 function renderTodos() {
   const track = $('#todo-track'); if (!track) return;
