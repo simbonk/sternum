@@ -128,7 +128,8 @@ label.check { display: flex; gap: 8px; align-items: center; font-size: .9rem }
 .seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--soft); border-radius: 12px; padding: 4px; gap: 4px }
 .seg button { border: 0; background: none; color: var(--muted); font: 600 1.05rem var(--mono); padding: 12px 4px; border-radius: 9px; min-height: 52px }
 .seg button[aria-checked="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1) }
-button.go { background: var(--pulse); border-color: var(--pulse); color: #fff; font: 700 1.35rem var(--display); min-height: 76px; border-radius: 18px; width: 100% }
+button.go, a.go { box-sizing: border-box; border: 1px solid var(--pulse); background: var(--pulse); border-color: var(--pulse); color: #fff; font: 700 1.35rem var(--display); min-height: 76px; border-radius: 18px; width: 100% }
+button.go:disabled { opacity: .55 }
 button.big-quiet { min-height: 76px; border-radius: 18px; font: 600 1.15rem var(--body); width: 100% }
 details.sim summary { cursor: pointer; color: var(--muted); font-size: .9rem; padding: 4px 0 }
 details.sim[open] summary { margin-bottom: 8px }
@@ -166,6 +167,22 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px }
 .welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
 .welcome .go { margin-top: auto }
+.danger { border-radius: 12px; padding: 14px 16px; background: var(--alert-bg); border-left: 5px solid var(--alert); display: flex; flex-direction: column; gap: 6px }
+.danger b { font-size: 1.05rem; color: var(--alert) }
+.danger p { margin: 0; font-size: .92rem; line-height: 1.5 }
+.todos { display: flex; flex-direction: column; gap: 8px }
+.todo-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch }
+.todo-track::-webkit-scrollbar { display: none }
+.todo { flex: 0 0 100%; scroll-snap-align: start; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; background: var(--panel); min-width: 0 }
+.todo h3 { font-size: 1.05rem; margin: 0 }
+.todo p { margin: 0 }
+.todo ol { margin: 6px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px }
+.todo .todo-k { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--pulse); font-weight: 600 }
+.todo.done { opacity: .7 } .todo.done .todo-k { color: var(--good) }
+.todo .todo-btn { text-align: center; text-decoration: none; min-height: 48px; font-size: 1.05rem; display: grid; place-items: center }
+.todo-dots { display: flex; justify-content: center; gap: 8px }
+.todo-dots button { width: 9px; height: 9px; border-radius: 50%; padding: 0; min-height: 0; border: 0; background: var(--line) }
+.todo-dots button[aria-current="true"] { background: var(--pulse) }
 .keep { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px }
 .keep summary { font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; list-style: none }
 .keep summary::-webkit-details-marker { display: none }
@@ -232,7 +249,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       </ul>
       <div class="safety">
         <b>Experimental, not a medical device</b>
-        <span>Sternum is a personal curiosity project. It can be wrong, and it cannot rule anything out.</span>
+        <span>Sternum is a personal curiosity project. It can be wrong, and it may not notice a condition you already have, so a normal result never rules anything out.</span>
         <span>Chest pain, fainting, severe breathlessness or a racing heart that won't settle: call emergency services, don't take a reading.</span>
       </div>
       <button class="go" id="btn-welcome">I understand, let's start</button>
@@ -257,11 +274,15 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   <main id="view-sessions" class="wrap" data-view="sessions" hidden></main>
   <main id="view-guide" class="wrap" data-view="guide" hidden>
     <article class="panel guide">
-        <div class="banner alert">Chest pain, fainting, severe breathlessness or a racing heart that won't settle needs a doctor or emergency services, not a recording. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</div>
-      <section>
-        <h2 id="home">Add it to your Home Screen</h2>
-        <div id="home-steps"></div>
-      </section>
+        <div class="danger" role="note">
+          <b>Get help now, don't take a reading</b>
+          <p>Chest pain, fainting, severe breathlessness, or a racing heart that won't settle: call emergency services or see a doctor.</p>
+          <p>Sternum is not a medical device. It can't diagnose anything, and it may not notice a condition you already have, such as atrial fibrillation, a pacemaker rhythm or a valve problem. A "normal" result never rules one out. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</p>
+        </div>
+        <section class="todos" aria-label="To do">
+          <div class="todo-track" id="todo-track"></div>
+          <div class="todo-dots" id="todo-dots"></div>
+        </section>
       <div class="sep"></div>
       <section>
         <h2>How to take a good reading</h2>
@@ -981,6 +1002,37 @@ function rawForExport(r) {
   return o;
 }
 function saveFile(file) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+// fill in the Google Form link once it exists; until then the card says it's coming
+const FEEDBACK_URL = '';
+function todoDone(k) { try { return !!localStorage.getItem('sternum.todo.' + k); } catch { return false; } }
+function renderTodos() {
+  const track = $('#todo-track'); if (!track) return;
+  const homeDone = standalone || todoDone('home');
+  const cards = [
+    `<article class="todo">
+      <span class="todo-k">To do · always open</span>
+      <h3>Tell us how it went</h3>
+      <p class="small">A short, anonymous form about whether Sternum worked for you and what was confusing. Every question is optional. Please don't include your name, email, birth date or anything else that identifies you.</p>
+      ${FEEDBACK_URL ? `<a class="go todo-btn" href="${FEEDBACK_URL}" target="_blank" rel="noopener">Give feedback</a>` : '<button class="go todo-btn" disabled>Feedback form coming soon</button>'}
+      <p class="small muted">The form is a separate Google Form; your readings are never sent with it.</p>
+    </article>`,
+    `<article class="todo${homeDone ? ' done' : ''}">
+      <span class="todo-k">${homeDone ? 'Done ✓' : 'To do'}</span>
+      <div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><h3 style="margin:0">Add Sternum to your Home Screen</h3></div>
+      <p class="small">${HOME_WHY}</p>
+      <details><summary class="small"><b>Show the steps</b></summary><h4 class="small" style="margin:8px 0 0">iPhone</h4>${HOME_IOS}<h4 class="small" style="margin:8px 0 0">Android</h4>${HOME_ANDROID}<p class="small muted">${HOME_NOTE}</p></details>
+      <div class="row"><button class="primary btn-install" hidden>Install</button>${homeDone ? (standalone ? '<span class="small muted">You opened Sternum from the Home Screen.</span>' : '<button class="quiet" data-undo="home">Mark as not done</button>') : '<button data-done="home">Mark as done</button>'}</div>
+    </article>`
+  ];
+  track.innerHTML = cards.join('');
+  const dots = $('#todo-dots'); dots.innerHTML = cards.map((_, i) => `<button aria-label="To do ${i + 1}" data-dot="${i}"></button>`).join('');
+  const mark = () => { const w = track.clientWidth || 1, i = Math.round(track.scrollLeft / w); dots.querySelectorAll('button').forEach((d, k) => d.setAttribute('aria-current', k === i)); };
+  track.onscroll = mark; mark();
+  dots.querySelectorAll('[data-dot]').forEach(d => d.onclick = () => track.scrollTo({ left: +d.dataset.dot * track.clientWidth, behavior: 'smooth' }));
+  track.querySelectorAll('[data-done]').forEach(b => b.onclick = () => { try { localStorage.setItem('sternum.todo.' + b.dataset.done, '1'); } catch { } renderTodos(); });
+  track.querySelectorAll('[data-undo]').forEach(b => b.onclick = () => { try { localStorage.removeItem('sternum.todo.' + b.dataset.undo); } catch { } renderTodos(); });
+  if (installEvt) track.querySelectorAll('.btn-install').forEach(b => b.hidden = false);
+}
 function homeHidden() { try { return !!localStorage.getItem('sternum.homeHidden'); } catch { return false; } }
 function shown() { return S.sessions.length ? S.sessions : EXAMPLES; }
 
@@ -1606,7 +1658,7 @@ let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
 document.addEventListener('click', async e => { if (!e.target.closest('.btn-install') || !installEvt) return; installEvt.prompt(); await installEvt.userChoice.catch(() => null); installEvt = null; document.querySelectorAll('.btn-install').forEach(b => b.hidden = true); });
-$('#home-steps').innerHTML = `<div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><p class="small muted" style="margin:0">${HOME_WHY}</p></div><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}<p class="small muted">${HOME_NOTE}</p>`;
+renderTodos();
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 $('#example-note').hidden = S.sessions.length > 0;
