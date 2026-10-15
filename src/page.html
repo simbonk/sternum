@@ -167,6 +167,9 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px }
 .welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
 .welcome .go { margin-top: auto }
+.about-you { display: flex; flex-direction: column; gap: 6px }
+.about-you select { min-height: 44px; min-width: 0; flex: 1 1 0 }
+.todos, .todo-track, main.wrap, .panel { min-width: 0; max-width: 100% }
 .danger { border-radius: 12px; padding: 14px 16px; background: var(--alert-bg); border-left: 5px solid var(--alert); display: flex; flex-direction: column; gap: 6px }
 .danger b { font-size: 1.05rem; color: var(--alert) }
 .danger p { margin: 0; font-size: .92rem; line-height: 1.5 }
@@ -252,6 +255,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
         <span>Sternum is a personal curiosity project. It can be wrong, and it may not notice a condition you already have, so a normal result never rules anything out.</span>
         <span>Chest pain, fainting, severe breathlessness or a racing heart that won't settle: call emergency services, don't take a reading.</span>
       </div>
+      <div class="about-you"><b class="small">About you (optional)</b><span class="small muted">Helps explain your numbers before you have a baseline. Stays on this phone.</span><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div></div>
       <button class="go" id="btn-welcome">I understand, let's start</button>
     </div>
   </section>
@@ -398,6 +402,7 @@ function packRaw(rec) {
 }
 // a field guide travels inside every export, so any reader (or another Claude) can interpret it cold
 const EXPORT_ABOUT = {
+  profile: 'optional, self-reported: age range and sex (null if not given). Use for context only, e.g. HRV norms fall with age.',
   what: 'Sternum readings. The person lies on their back with an iPhone (no case) flat on the lower breastbone for 60-120 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest) and the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
   sessions: {
     id: 'unique reading id; keys raw data in "raw"', ts: 'start time, ms since 1970 (UTC)', source: 'live = recorded on the phone; simulated = synthetic demo',
@@ -432,6 +437,16 @@ function rawForExport(r) {
 function saveFile(file) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
 // fill in the Google Form link once it exists; until then the card says it's coming
 const FEEDBACK_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdNueyFCBLw2qdhyYZbCjumkFlLopR5qgpJE_-AiV5V809osw/viewform';
+function loadProfile() { try { return JSON.parse(localStorage.getItem('sternum.profile') || '{}') || {}; } catch { return {}; } }
+function saveProfile(root) {
+  const age = root.querySelector('.pf-age')?.value || '', sex = root.querySelector('.pf-sex')?.value || '';
+  const pf = { ...loadProfile(), age: age || null, sex: sex || null };
+  try { localStorage.setItem('sternum.profile', JSON.stringify(pf)); } catch { }
+  return pf;
+}
+function fillProfile(root) { const pf = loadProfile(); const a = root.querySelector('.pf-age'), x = root.querySelector('.pf-sex'); if (a && pf.age) a.value = pf.age; if (x && pf.sex) x.value = pf.sex; }
+// rough population ranges for short-term resting RMSSD (ms) by age, used only until a personal baseline exists
+const RMSSD_BY_AGE = { 'Under 25': [35, 80], '25–39': [25, 65], '40–54': [18, 50], '55–69': [13, 40], '70+': [10, 35] };
 function todoDone(k) { try { return !!localStorage.getItem('sternum.todo.' + k); } catch { return false; } }
 function renderTodos() {
   const track = $('#todo-track'); if (!track) return;
@@ -451,8 +466,17 @@ function renderTodos() {
       <details><summary class="small"><b>Show the steps</b></summary><h4 class="small" style="margin:8px 0 0">iPhone</h4>${HOME_IOS}<h4 class="small" style="margin:8px 0 0">Android</h4>${HOME_ANDROID}<p class="small muted">${HOME_NOTE}</p></details>
       <div class="row"><button class="primary btn-install" hidden>Install</button>${homeDone ? (standalone ? '<span class="small muted">You opened Sternum from the Home Screen.</span>' : '<button class="quiet" data-undo="home">Mark as not done</button>') : '<button data-done="home">Mark as done</button>'}</div>
     </article>`
+    ,`<article class="todo${loadProfile().age ? ' done' : ''}">
+      <span class="todo-k">${loadProfile().age ? 'Done ✓ · change any time' : 'To do · optional'}</span>
+      <h3>Tell Sternum your age range</h3>
+      <p class="small">Heart rate variability falls a lot with age, so this lets Sternum say what's typical for you before your own baseline builds up. Sex is optional and only fine-tunes the wording. Stored only on this phone.</p>
+      <div class="about-you"><b class="small">About you (optional)</b><span class="small muted">Helps explain your numbers before you have a baseline. Stays on this phone.</span><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div></div>
+      <div class="row"><button data-save-profile>Save</button><span class="small muted" data-saved hidden>Saved</span></div>
+    </article>`
   ];
   track.innerHTML = cards.join('');
+  fillProfile(track);
+  track.querySelectorAll('[data-save-profile]').forEach(b => b.onclick = () => { saveProfile(b.closest('.todo')); const i = Math.round(track.scrollLeft / (track.clientWidth || 1)); renderTodos(); track.scrollLeft = i * track.clientWidth; const sv = track.querySelector('[data-saved]'); if (sv) sv.hidden = false; });
   const dots = $('#todo-dots'); dots.innerHTML = cards.map((_, i) => `<button aria-label="To do ${i + 1}" data-dot="${i}"></button>`).join('');
   const mark = () => { const w = track.clientWidth || 1, i = Math.round(track.scrollLeft / w); dots.querySelectorAll('button').forEach((d, k) => d.setAttribute('aria-current', k === i)); };
   track.onscroll = mark; mark();
@@ -610,7 +634,7 @@ function plainEnglish(sess, B) {
   const hr = M.hr, hrR = rel('hr', hr, B);
   out.hr = !Number.isFinite(hr) ? '' : (hr < 40 ? 'Very slow. Normal for some athletes; otherwise worth checking.' : hr < 50 ? 'Slow. Common and healthy in fit people.' : hr <= 100 ? 'A normal resting rate (50 to 100).' : 'Fast for someone lying still.') + (hrR === 'usual' ? ' About your usual.' : hrR ? ` ${hrR === 'higher' ? 'Higher' : 'Lower'} than your usual.` : '');
   const hv = M.rmssd, hvR = rel('rmssd', hv, B);
-  out.rmssd = !Number.isFinite(hv) ? '' : 'How much the gap between beats varies. Higher usually means rested. ' + (hvR === 'usual' ? 'About your usual.' : hvR === 'lower' ? 'Lower than usual: often after poor sleep, alcohol, hard exercise or a coming cold.' : hvR === 'higher' ? 'Higher than usual, usually a sign of being well rested.' : 'Very personal: most adults read 20 to 100 ms, less with age. Compare with your own readings.');
+  out.rmssd = !Number.isFinite(hv) ? '' : 'How much the gap between beats varies. Higher usually means rested. ' + (hvR === 'usual' ? 'About your usual.' : hvR === 'lower' ? 'Lower than usual: often after poor sleep, alcohol, hard exercise or a coming cold.' : hvR === 'higher' ? 'Higher than usual, usually a sign of being well rested.' : (() => { const rg = RMSSD_BY_AGE[loadProfile().age]; if (!rg) return 'Very personal: most adults read 20 to 100 ms, less with age. Compare with your own readings.'; return `Typical for your age is roughly ${rg[0]} to ${rg[1]} ms; yours is ${hv < rg[0] ? 'below that, which can be normal for you; your own baseline will tell' : hv > rg[1] ? 'above that, usually a good sign' : 'within it'}.`; })());
   const br = M.br;
   out.br = !Number.isFinite(br) ? 'Not measured: the phone could not see your chest rise and fall clearly. Keep it flat on the breastbone and breathe normally, not shallowly.' : br < 8 ? 'Very slow, as in deep relaxation.' : br < 12 ? 'Slow and relaxed, common lying down.' : br <= 20 ? 'Normal (12 to 20).' : br < 25 ? 'A bit fast for rest.' : 'Fast for rest.';
   let rw, rm;
@@ -802,7 +826,7 @@ function renderSessions() {
   let prepared = null;
   const build = async () => {
     const note = $('#share-note'); note.textContent = 'Preparing…';
-    const out = { app: 'sternum', version: 2, exported: new Date().toISOString(), about: EXPORT_ABOUT, device: navigator.userAgent, sessions: S.sessions };
+    const out = { app: 'sternum', version: 2, exported: new Date().toISOString(), about: EXPORT_ABOUT, device: navigator.userAgent, profile: (({ age, sex }) => ({ age: age || null, sex: sex || null }))(loadProfile()), sessions: S.sessions };
     if ($('#raw-in').checked) { out.raw = {}; for (const s of S.sessions.slice(-3)) { const r = await rawGet(s.id); if (r) out.raw[s.id] = rawForExport(r); } }
     const n = out.raw ? Object.keys(out.raw).length : 0;
     const name = `sternum-${new Date().toISOString().slice(0, 10)}${n ? '-raw' : ''}.json`;
@@ -1079,8 +1103,8 @@ $('#btn-live').onclick = async () => {
 
 /* ---------- start ---------- */
 S.sessions = loadLocal();
-const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
-$('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
+const showWelcome = () => { fillProfile($('#welcome')); $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
+$('#btn-welcome').onclick = () => { saveProfile($('#welcome')); renderTodos(); $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
