@@ -40,6 +40,10 @@ node build.js
 node test/test.js
 ```
 
+## Icon
+
+`icons/icon.svg` is the source; the PNGs (Home Screen, favicon, Android install) are rendered from it.
+
 ## Licence
 
 MIT, see `LICENSE`. The keep-awake video in `vendor/` is from NoSleep.js (MIT, see `vendor/NoSleep-LICENSE`).

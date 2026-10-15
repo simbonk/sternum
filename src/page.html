@@ -163,6 +163,11 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px }
 .welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
 .welcome .go { margin-top: auto }
+.install { display: flex; gap: 14px; align-items: flex-start }
+.install img { width: 56px; height: 56px; border-radius: 13px; flex: none }
+.install ol { margin: 6px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px }
+.install .share-ic { display: inline-block; vertical-align: -3px; color: var(--breath) }
+.install .row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap }
 .local-pill { display: inline-flex; align-items: center; gap: 6px; font: 600 .78rem var(--body); color: var(--breath); background: var(--breath-soft); padding: 4px 10px; border-radius: 99px; border: 0; cursor: pointer }
 
 .share { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; background: var(--breath-soft) }
@@ -172,7 +177,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 
 <div class="wrap">
   <header class="top">
-    <div class="brand"><span class="pulse-dot" aria-hidden="true"></span><h1>Sternum</h1><span class="tag">phone-on-chest heart &amp; breath log</span><button class="local-pill" id="btn-privacy" style="margin-left:auto"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>Data stays on this phone</button></div>
+    <div class="brand"><span class="pulse-dot" aria-hidden="true"></span><h1>Sternum</h1><span class="tag">phone-on-chest heart &amp; breath log</span></div>
     <nav class="tabs" role="tablist">
       <button role="tab" id="tab-record" data-tab="record" aria-selected="true">Record</button>
       <button role="tab" id="tab-trends" data-tab="trends" aria-selected="false">Trends</button>
@@ -182,6 +187,23 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   </header>
 
   <main id="view-record" class="wrap" data-view="record">
+    <section class="panel install" id="install-panel" hidden>
+      <img src="icons/icon-180.png" alt="">
+      <div>
+        <h2 style="font-size:1.1rem">Add Sternum to your Home Screen</h2>
+        <p class="small muted" style="margin:2px 0 0">You get the heart icon, it opens full screen like an app, and Safari keeps your readings instead of clearing them after 7 days unused.</p>
+        <ol class="small" id="install-ios">
+          <li>In Safari, tap the Share button <svg class="share-ic" width="17" height="17" viewBox="0 0 24 24" aria-label="Share"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> (bottom of the screen, or top right on iPad).</li>
+          <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+          <li>Open Sternum from its new icon from now on.</li>
+        </ol>
+        <ol class="small" id="install-android" hidden>
+          <li>In Chrome, tap the <b>⋮</b> menu at the top right.</li>
+          <li>Tap <b>Add to Home screen</b> or <b>Install app</b>, then <b>Install</b>.</li>
+        </ol>
+        <div class="row"><button class="go" id="btn-install" hidden style="min-height:44px;padding:8px 18px;font-size:1rem">Install</button><button class="quiet" id="btn-install-hide">Not now</button></div>
+      </div>
+    </section>
     <section class="panel start" id="start-panel">
       <h2>Take a reading</h2>
       <ol class="steps">
@@ -287,6 +309,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
         <h2 id="privacy">How your data is kept</h2>
         <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can send it to Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup or to attach your readings in the Claude chat.</p>
         <p class="small muted">The page loads its fonts from Google Fonts; no readings go with that request. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
+        <button class="quiet" id="btn-install-show" style="align-self:flex-start;padding-left:0">How to add it to your Home Screen</button>
         <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
       </section>
     </article>
@@ -919,9 +942,17 @@ S.sessions = loadLocal();
 const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
 $('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
-$('#btn-privacy').onclick = () => { setTab('guide'); requestAnimationFrame(() => $('#privacy').scrollIntoView({ block: 'start' })); };
+$('#btn-install-show').onclick = () => { const a = /Android/i.test(navigator.userAgent); $('#install-panel').hidden = false; $('#install-ios').hidden = a; $('#install-android').hidden = !a; setTab('record'); scrollTo(0, 0); };
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
+const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+const android = /Android/i.test(navigator.userAgent);
+let installHidden = false; try { installHidden = !!localStorage.getItem('sternum.installHidden'); } catch { }
+if (!standalone && !installHidden) { $('#install-panel').hidden = false; $('#install-ios').hidden = android; $('#install-android').hidden = !android; }
+$('#btn-install-hide').onclick = () => { $('#install-panel').hidden = true; try { localStorage.setItem('sternum.installHidden', '1'); } catch { } };
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#btn-install').hidden = false; });
+$('#btn-install').onclick = async () => { if (!installEvt) return; installEvt.prompt(); const c = await installEvt.userChoice.catch(() => null); installEvt = null; $('#btn-install').hidden = true; if (c && c.outcome === 'accepted') $('#install-panel').hidden = true; };
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 // open on a realistic working state: the latest reading (an example until you have your own)

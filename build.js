@@ -20,6 +20,7 @@ const nosleep = fs.readFileSync('vendor/nosleep-media.js', 'utf8');
 const body = fs.readFileSync('src/page.html', 'utf8').replace('/*__NOSLEEP__*/', () => nosleep).replace('/*__DSP__*/', () => dsp).replace('/*__EXAMPLES__*/[]', () => JSON.stringify(examples));
 const head = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
   '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Sternum"><meta name="theme-color" content="#C2313B">' +
+  '<link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="icon" href="icons/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="manifest" href="manifest.webmanifest">' +
   '<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>';
 fs.writeFileSync('index.html', head + body + '</body></html>');
 console.log('built index.html', (head + body).length, 'bytes');
