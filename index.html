@@ -167,7 +167,10 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome .safety { border-radius: 12px; padding: 12px 14px; background: var(--alert-bg); display: flex; flex-direction: column; gap: 6px; font-size: .92rem }
 .welcome .go { margin-top: auto }
 .keep { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px }
-.keep summary { font-weight: 600; cursor: pointer }
+.keep summary { font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; list-style: none }
+.keep summary::-webkit-details-marker { display: none }
+.keep summary .chev { margin-left: auto; font-size: 1.4rem; color: var(--muted); transition: transform .15s }
+.keep[open] summary .chev { transform: rotate(90deg) }
 .keep ol { margin: 8px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px }
 .keep .row { margin-top: 10px }
 .share-ic { display: inline-block; vertical-align: -3px; color: var(--breath) }
@@ -254,6 +257,12 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   <main id="view-sessions" class="wrap" data-view="sessions" hidden></main>
   <main id="view-guide" class="wrap" data-view="guide" hidden>
     <article class="panel guide">
+        <div class="banner alert">Chest pain, fainting, severe breathlessness or a racing heart that won't settle needs a doctor or emergency services, not a recording. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</div>
+      <section>
+        <h2 id="home">Add it to your Home Screen</h2>
+        <div id="home-steps"></div>
+      </section>
+      <div class="sep"></div>
       <section>
         <h2>How to take a good reading</h2>
         <ol>
@@ -290,12 +299,6 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
         <h2>Signs it can graph</h2>
         <p class="small muted">These are wellness flags measured against your own baseline, not diagnoses.</p>
         <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 10 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
-        <div class="banner alert">Chest pain, fainting, severe breathlessness or a racing heart that won't settle needs a doctor or emergency services, not a recording. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</div>
-      </section>
-      <div class="sep"></div>
-      <section>
-        <h2 id="home">Add it to your Home Screen</h2>
-        <div id="home-steps"></div>
       </section>
       <div class="sep"></div>
       <section>
@@ -1275,7 +1278,7 @@ function renderSessions() {
       <span class="small muted" id="share-note"></span>
     </div>
     <span class="small muted">Saved on this phone only. Export a backup now and then.</span>
-    ${standalone || homeHidden() ? '' : `<details class="keep"><summary>Want to keep your data on this ${/Android/i.test(navigator.userAgent) ? 'phone' : 'iPhone'}?</summary><p class="small muted">${HOME_WHY}</p>${/Android/i.test(navigator.userAgent) ? HOME_ANDROID : HOME_IOS}<div class="row"><button class="primary btn-install" hidden>Install</button><button class="quiet" id="btn-home-hide">Hide this</button></div></details>`}
+    ${standalone || homeHidden() ? '' : `<details class="keep"><summary><img src="icons/icon-180.png" alt="Sternum icon" width="36" height="36" style="border-radius:8px;flex:none"><span>Want to keep your data on this ${/Android/i.test(navigator.userAgent) ? 'phone' : 'iPhone'}?</span><span class="chev" aria-hidden="true">›</span></summary><p class="small muted">${HOME_WHY}</p>${/Android/i.test(navigator.userAgent) ? HOME_ANDROID : HOME_IOS}<div class="row"><button class="primary btn-install" hidden>Install</button><button class="quiet" id="btn-home-hide">Hide this</button></div></details>`}
     <div class="list">${list.map(s => `
       <div class="item">
         <div><span class="when">${esc(dateStr(s.ts))}</span>${s.baseline ? '<span class="base-mark">baseline</span>' : ''}
@@ -1552,7 +1555,7 @@ let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
 document.addEventListener('click', async e => { if (!e.target.closest('.btn-install') || !installEvt) return; installEvt.prompt(); await installEvt.userChoice.catch(() => null); installEvt = null; document.querySelectorAll('.btn-install').forEach(b => b.hidden = true); });
-$('#home-steps').innerHTML = `<p class="small muted">${HOME_WHY}</p><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}`;
+$('#home-steps').innerHTML = `<div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><p class="small muted" style="margin:0">${HOME_WHY}</p></div><h3 class="small" style="margin:8px 0 0">iPhone</h3>${HOME_IOS}<h3 class="small" style="margin:8px 0 0">Android</h3>${HOME_ANDROID}`;
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 $('#example-note').hidden = S.sessions.length > 0;
