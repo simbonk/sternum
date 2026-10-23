@@ -7,6 +7,7 @@
   --pulse: #C2313B; --pulse-soft: rgba(194,49,59,.12); --breath: #1B7383; --breath-soft: rgba(27,115,131,.14);
   --base: #7D8894; --good: #23784A; --warn: #A86A12; --alert: #B42318;
   --good-bg: rgba(35,120,74,.1); --warn-bg: rgba(168,106,18,.12); --alert-bg: rgba(180,35,24,.1);
+  --device: #121920;
   --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -14,13 +15,13 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0D1217; --panel: #141B22; --ink: #E6EBEF; --muted: #96A2AD; --line: #27323C; --soft: #1B242C;
   --pulse: #F26D74; --pulse-soft: rgba(242,109,116,.16); --breath: #56B9C9; --breath-soft: rgba(86,185,201,.16);
-  --base: #8994A0; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
+  --base: #8994A0; --device: #4E5B67; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
   --good-bg: rgba(91,194,138,.12); --warn-bg: rgba(226,168,74,.13); --alert-bg: rgba(255,122,110,.13);
   color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #0D1217; --panel: #141B22; --ink: #E6EBEF; --muted: #96A2AD; --line: #27323C; --soft: #1B242C;
   --pulse: #F26D74; --pulse-soft: rgba(242,109,116,.16); --breath: #56B9C9; --breath-soft: rgba(86,185,201,.16);
-  --base: #8994A0; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
+  --base: #8994A0; --device: #4E5B67; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
   --good-bg: rgba(91,194,138,.12); --warn-bg: rgba(226,168,74,.13); --alert-bg: rgba(255,122,110,.13);
   color-scheme: dark }
 
@@ -152,12 +153,19 @@ details.sim[open] summary { margin-bottom: 8px }
 figure { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
 figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted) }
 .trace canvas { width: 100%; height: 120px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
-.live-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: end }
-.live-row .trace canvas { height: 120px }
-.breath svg { width: 120px; height: 120px }
-#breath-dot { transition: r .2s linear }
-.live-settle, .live-traces { display: flex; flex-direction: column; gap: 14px }
-.live-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; margin-top: auto }
+.live-settle, .live-rec, .live-traces { display: flex; flex-direction: column; gap: 14px }
+.live-settle { flex: 1; justify-content: center }
+.live-rec .trace canvas { height: 100px }
+.live-actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; margin-top: auto }
+.live-warn { flex: 1; display: grid; place-items: center }
+.warn-card { border: 2px solid var(--alert); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, var(--alert) 7%, var(--bg)) }
+.warn-card b { color: var(--alert); font: 700 1.5rem/1.15 var(--display) }
+.warn-card p { margin: 0; font-size: 1.05rem }
+.settle-top { display: flex; justify-content: space-between; align-items: center; gap: 12px }
+.settle-top h2 { margin: 0 }
+.settle-top p { margin: 2px 0 0 }
+#settle-count { font: 700 3.6rem/1 var(--display); font-variant-numeric: tabular-nums; color: var(--pulse); min-width: 2ch; text-align: right }
+.live-settle > p { margin: 0 }
 
 .signs { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px }
 .signs > div { background: var(--soft); border-radius: 10px; padding: 10px 12px; min-width: 0 }
@@ -211,22 +219,25 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome .brandline img { width: 40px; height: 40px; border-radius: 10px }
 .disclaimer { font-size: .84rem; color: var(--muted); border-left: 3px solid var(--alert); padding: 2px 0 2px 10px; max-width: 65ch }
 .disclaimer b { color: var(--ink); font-weight: 600 }
-.pose { margin: 0; background: var(--soft); border-radius: 12px; padding: 10px 8px 6px }
-.pose svg { display: block; width: 100%; height: auto; max-width: 460px; margin: 0 auto; overflow: visible }
-.pose text { font-family: var(--body); font-size: 11px; fill: var(--muted) }
-.pose .em { fill: var(--ink); font-weight: 600 }
+.pose { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px 6px }
+.pose svg { display: block; width: 100%; height: auto; max-width: 480px; margin: 0 auto; overflow: visible }
+.pose text { font-family: var(--body) }
+.pose .cap { font-size: 11px; font-weight: 500; fill: var(--muted) }
+.pose .lab { font-size: 10px; font-weight: 600; fill: var(--ink) }
+.pose .lab2 { font-size: 9.5px; fill: var(--muted) }
+.pose .scr { font: 700 13px var(--mono); fill: var(--pulse) }
 .pose .ph, .pose .ph2, .pose .breathe, .pose .beat { transform-box: fill-box; transform-origin: center }
-.pose .ph { animation: ph-drop 7s ease-in-out infinite }
-.pose .ph2 { animation: ph-place 7s ease-in-out infinite }
-.pose .breathe { animation: breathe 4s ease-in-out infinite }
-.pose .beat { opacity: 0; animation: beat-ring 1s ease-out infinite; animation-delay: 2.2s }
+.pose .ph { animation: ph-drop 7s cubic-bezier(.2,.7,.2,1) infinite }
+.pose .ph2 { animation: ph-place 7s cubic-bezier(.2,.7,.2,1) infinite }
+.pose .breathe { animation: breathe 4.2s ease-in-out infinite }
+.pose .beat { opacity: 0; animation: beat-ring 1s ease-out infinite; animation-delay: 2.1s }
 .pose .sight { animation: sight 7s ease-in-out infinite }
-@keyframes ph-drop { 0% { transform: translateY(-34px); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
-@keyframes ph-place { 0% { transform: scale(1.35) rotate(-20deg); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
-@keyframes breathe { 0%, 100% { transform: none } 50% { transform: translateY(-2px) } }
-@keyframes beat-ring { 0% { transform: scale(.5); opacity: .55 } 100% { transform: scale(1.25); opacity: 0 } }
-@keyframes sight { 0%, 30% { opacity: 0 } 40%, 100% { opacity: 1 } }
-@media (prefers-reduced-motion: reduce) { .pose .ph, .pose .ph2, .pose .breathe, .pose .beat, .pose .sight { animation: none } .pose .beat { opacity: .3 } }
+@keyframes ph-drop { 0% { transform: translateY(-28px); opacity: 0 } 8% { opacity: 1 } 26%, 100% { transform: none; opacity: 1 } }
+@keyframes ph-place { 0% { transform: scale(1.25); opacity: 0 } 8% { opacity: 1 } 26%, 100% { transform: none; opacity: 1 } }
+@keyframes breathe { 0%, 100% { transform: none } 50% { transform: translateY(-1.5px) } }
+@keyframes beat-ring { 0% { transform: scale(1); opacity: .5 } 100% { transform: scale(1.18); opacity: 0 } }
+@keyframes sight { 0%, 30% { opacity: 0 } 42%, 100% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .pose .ph, .pose .ph2, .pose .breathe, .pose .beat, .pose .sight { animation: none } .pose .beat { opacity: .25 } }
 .desk { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px }
 .desk .qr { width: 132px; height: 132px; background: #fff; border-radius: 10px; padding: 6px; display: grid; place-items: center }
 .desk .qr svg { width: 100%; height: 100% }
@@ -254,44 +265,6 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
   <main id="view-record" class="wrap" role="tabpanel" aria-labelledby="tab-record" data-view="record">
     <section class="panel start" id="start-panel">
       <h2>Take a reading</h2>
-      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
-          <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
-            <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
-            </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
-          </g>
-          <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
-            <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
-            </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
-          </g>
-        </svg>
-      </figure>
       <ol class="steps">
         <li>Lie flat on your back. Take the phone out of its case and lay it screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down at the screen.</li>
         <li>Tap <b>Start</b>. You get 10 seconds to settle, then a soft chime: breathe normally and keep still.</li>
@@ -333,65 +306,75 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
         <span>Sternum is a personal curiosity project. It can be wrong, and it may not notice a condition you already have, so a normal result never rules anything out.</span>
         <span>Chest pain, fainting, severe breathlessness or a racing heart that won't settle: call emergency services, don't take a reading.</span>
       </div>
-      <div class="about-you"><b class="small">About you (optional)</b><span class="small muted">Helps explain your numbers before you have a baseline. Stays on this phone.</span><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div></div>
       <button class="go" id="btn-welcome">I understand, let's start</button>
     </div>
   </section>
   <section class="live" id="live" hidden aria-live="polite">
     <div class="live-in">
-      <div class="live-head"><span id="live-phase" class="tall-sm">Get settled</span><span id="live-sensors" class="small muted"></span></div>
-      <div class="live-time"><span id="live-count" class="tall">10</span><span class="unit tall-sm" id="live-unit">s to start</span></div>
-      <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
-      <div id="live-settle" class="live-settle">
-      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
+      <div id="live-warn" class="live-warn">
+        <div class="warn-card" role="alert">
+          <b>A curiosity, not a medical device</b>
+          <p>Sternum can be wrong, and a normal result never rules anything out.</p>
+          <p>If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading. Call emergency services or see a doctor.</p>
+        </div>
+      </div>
+      <div id="live-settle" class="live-settle" hidden>
+        <div class="settle-top"><div><h2>Get into position</h2><p class="muted">Recording starts in</p></div><span id="settle-count">10</span></div>
+      <figure class="pose" aria-label="Lie flat on your back. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
+        <svg viewBox="0 0 360 176" aria-hidden="true">
+          <defs>
+            <linearGradient id="pose-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--muted)" stop-opacity=".30"/><stop offset="1" stop-color="var(--muted)" stop-opacity=".16"/></linearGradient>
+            <linearGradient id="pose-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="var(--muted)" stop-opacity=".26"/><stop offset="1" stop-color="var(--muted)" stop-opacity="0"/></linearGradient>
+            <filter id="pose-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity=".25"/></filter>
+          </defs>
+          <!-- side view: lying flat, phone on the lower breastbone -->
           <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
+            <rect x="4" y="124" width="170" height="14" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+            <rect x="8" y="112" width="40" height="12" rx="6" fill="var(--panel)" stroke="var(--line)"/>
             <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
+              <path d="M30 124V116C34 110 40 105 48 101C56 97 66 95 76 95C86 95 94 98 102 102C112 106 124 107 136 108L160 111C166 112 170 116 170 124Z" fill="url(#pose-body)"/>
+              <g class="ph"><g transform="rotate(-6 69 94.5)"><rect x="54" y="92.3" width="30" height="5" rx="2.2" fill="var(--device)" filter="url(#pose-shadow)"/><rect x="56" y="91.9" width="26" height="1.1" rx=".5" fill="var(--pulse)"/></g></g>
             </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
+            <circle cx="27" cy="106" r="13.5" fill="url(#pose-body)"/>
+            <circle cx="34" cy="100.5" r="1.4" fill="var(--ink)" opacity=".55"/>
+            <path class="sight" d="M36 99.5L57 94" stroke="var(--breath)" stroke-width="1.4" stroke-dasharray="2.5 3" stroke-linecap="round" fill="none"/>
+            <text x="88" y="160" text-anchor="middle" class="cap">Lie flat on your back</text>
           </g>
+          <!-- top view: phone lengthwise, bottom edge toward the chin -->
           <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
+            <ellipse cx="270" cy="16" rx="19" ry="22" fill="url(#pose-body)"/>
+            <path d="M259 30C259 38 256 41 248 43C236 46 222 47 214 54C206 61 204 72 204 86V150H336V86C336 72 334 61 326 54C318 47 304 46 290 43C284 41 281 38 281 30Z" fill="url(#pose-fade)"/>
+            <path d="M270 46V112" stroke="var(--muted)" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+            <path d="M222 74C234 90 252 94 264 88M318 74C306 90 288 94 276 88" fill="none" stroke="var(--muted)" stroke-opacity=".3" stroke-width="1.5" stroke-linecap="round"/>
+            <rect class="beat" x="254" y="57" width="32" height="62" rx="8" fill="none" stroke="var(--pulse)" stroke-width="2"/>
             <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
+              <rect x="255" y="58" width="30" height="60" rx="7" fill="var(--device)" stroke="var(--line)" stroke-width=".8" filter="url(#pose-shadow)"/>
+              <rect x="257.2" y="60.2" width="25.6" height="55.6" rx="5" fill="var(--panel)"/>
+              <rect x="264" y="62.6" width="12" height="1.3" rx=".65" fill="var(--muted)"/>
+              <rect x="265" y="111.6" width="10" height="3" rx="1.5" fill="var(--device)"/>
+              <g transform="rotate(180 270 87)"><text x="270" y="106" text-anchor="middle" class="scr" transform="translate(0 -73) scale(1 1.6)">72</text></g>
             </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow3)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
+            <path d="M306 36C300 46 293 53 287 59" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-opacity=".7"/>
+            <circle cx="287" cy="59" r="2" fill="var(--ink)"/>
+            <rect x="294" y="8" width="64" height="28" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+            <text x="326" y="20" text-anchor="middle" class="lab">Bottom edge</text>
+            <text x="326" y="31" text-anchor="middle" class="lab2">toward chin</text>
+            <text x="270" y="166" text-anchor="middle" class="cap">Screen up, on the lower breastbone</text>
           </g>
         </svg>
       </figure>
-      <p class="disclaimer"><b>A curiosity, not a medical device.</b> If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading: call emergency services or see a doctor.</p>
+        <p class="muted">Arms relaxed at your sides. Breathe normally and keep still.</p>
       </div>
-      <div class="live-hr"><span class="k tall-sm">Heart rate</span><span class="huge tall" id="live-bpm">--</span><span class="k tall-sm" id="live-bpm-note">finding your pulse</span></div>
-      <div id="live-traces" class="live-traces" hidden>
+      <div id="live-rec" class="live-rec" hidden>
+      <div class="live-head"><span id="live-phase" class="tall-sm">Recording</span></div>
+      <div class="live-time"><span id="live-count" class="tall">60</span><span class="unit tall-sm" id="live-unit">s left</span></div>
+      <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
+      <div class="live-hr" aria-label="Heart rate"><span class="huge tall" id="live-bpm">--</span><span class="k tall-sm" id="live-bpm-note">finding your pulse</span></div>
+      <div id="live-traces" class="live-traces">
       <figure class="trace"><figcaption>Chest motion</figcaption><canvas id="scope-heart" aria-label="Live chest motion"></canvas></figure>
-      <div class="live-row">
-        <figure class="breath"><figcaption>Breathing</figcaption><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="none" stroke="var(--line)" stroke-width="2"/><circle id="breath-dot" cx="60" cy="60" r="30" fill="var(--breath-soft)" stroke="var(--breath)" stroke-width="2"/></svg></figure>
-        <figure class="trace"><figcaption>Breathing trace</figcaption><canvas id="scope-breath" aria-label="Live breathing trace"></canvas></figure>
       </div>
       </div>
-      <div class="live-actions"><button class="big-quiet" id="btn-cancel">Cancel</button><button class="go" id="btn-stop">Finish now</button></div>
+      <div class="live-actions" id="live-actions" hidden><button class="big-quiet" id="btn-cancel">Cancel</button><button class="go" id="btn-stop">Finish now</button></div>
     </div>
   </section>
 
@@ -406,44 +389,6 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
         </div>
         <section>
           <h2>How to take a good reading</h2>
-          <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
-          <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
-            <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
-            </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
-          </g>
-          <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
-            <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
-            </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow2)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
-          </g>
-        </svg>
-      </figure>
           <ol>
             <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on a bed, with one thin pillow at most, and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
             <li>Take the phone out of its case and lay it screen up, flat and lengthwise along the lower half of your breastbone (the flat bone in the middle of your chest), with its bottom edge toward your chin. Then a glance down shows the countdown and your heart rate the right way up.</li>
@@ -492,6 +437,12 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
           <li><b>REFLECS heart-failure study</b>: 1,003 people, a phone on the sternum for 2 minutes; it recognised heart failure with an AUC of 0.95, and the gyroscope beat the accelerometer (<a href="https://www.acc.org/latest-in-cardiology/journal-scans/2024/04/11/13/57/smartphone-based-recognition-of-hf" target="_blank" rel="noopener">JACC: Heart Failure, 2024</a>; <a href="https://clinicaltrials.gov/study/NCT04444583" target="_blank" rel="noopener">trial record</a>).</li>
           <li><b>Related consumer devices</b>: digital stethoscopes such as Eko analyse heart sounds; smartwatches flag irregular rhythm and breathing disturbances from wrist sensors.</li>
         </ul>
+      </section>
+      <div class="sep"></div>
+      <section id="settings">
+        <h2>About you (optional)</h2>
+        <p class="small muted">Your age range lets Sternum say what's typical before your own baseline builds up. Sex only fine-tunes the wording. Both stay on this phone, and you can leave them blank.</p>
+        <div class="about-you" id="pf-settings"><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div><div class="row"><button id="btn-pf-save">Save</button><span class="small muted" id="pf-saved" hidden>Saved</span></div></div>
       </section>
       <div class="sep"></div>
       <section>
@@ -1140,9 +1091,10 @@ $('#btn-live').onclick = async () => {
   const AC = window.AudioContext || window.webkitAudioContext; let ac = null; try { ac = new AC(); ac.resume && ac.resume(); } catch { }
   const motionAsk = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function' ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : Promise.resolve('granted');
   $('#start-msg').hidden = true;
-  const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), sensors: $('#live-sensors'), stop: $('#btn-stop'), dot: $('#breath-dot') };
-  ui.live.hidden = false; document.body.style.overflow = 'hidden'; $('#live-settle').hidden = false; $('#live-traces').hidden = true;
-  ui.phase.textContent = 'Asking for sensor access'; ui.count.textContent = ''; ui.unit.textContent = ''; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
+  const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), settleCount: $('#settle-count'), stop: $('#btn-stop') };
+  const tShown = performance.now(), show = id => ['#live-warn', '#live-settle', '#live-rec'].forEach(k => $(k).hidden = k !== id);
+  ui.live.hidden = false; document.body.style.overflow = 'hidden'; show('#live-warn'); $('#live-actions').hidden = true; ui.stop.hidden = true;
+  ui.settleCount.textContent = '10'; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
 
   // chimes should sound even with the ring/silent switch on
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { }
@@ -1150,8 +1102,8 @@ $('#btn-live').onclick = async () => {
 
   const M = { t: [], ax: [], ay: [], az: [], gx: [], gy: [], gz: [], tx: [], ty: [], tz: [] };
   const R = { t: [], gx: [], gy: [], az: [] };          // rolling 14 s for the live heart rate
-  const scope = [], breathHist = [];
-  let recording = false, t0 = 0, motionSeen = false, hasGyro = false, filt = null, fsEst = 60, lpT = null, slowT = null;
+  const scope = [];
+  let recording = false, t0 = 0, motionSeen = false, hasGyro = false, filt = null, fsEst = 60;
   const now = () => performance.now() / 1000;
   const onMotion = e => {
     const tn = e.timeStamp > 0 ? e.timeStamp / 1000 : now();
@@ -1161,13 +1113,6 @@ $('#btn-live').onclick = async () => {
     if (!filt) { const hi = Math.min(20, fsEst * 0.4); filt = [bqStream(bqCo('hp', 4, fsEst)), bqStream(bqCo('lp', hi, fsEst))]; }
     const raw = hasGyro ? (r.beta || 0) : (a.z || 0);
     scope.push(filt[1](filt[0](raw))); if (scope.length > fsEst * 6) scope.shift();
-    // breathing: chest tilt, smoothed, minus its slow drift
-    if (g.z != null) {
-      const tilt = Math.atan2(g.y || 0, g.z) + Math.atan2(g.x || 0, g.z);
-      const k1 = 1 - Math.exp(-2 * Math.PI * 0.6 / fsEst), k2 = 1 - Math.exp(-2 * Math.PI * 0.04 / fsEst);
-      lpT = lpT == null ? tilt : lpT + k1 * (tilt - lpT); slowT = slowT == null ? tilt : slowT + k2 * (lpT - slowT);
-      breathHist.push(lpT - slowT); if (breathHist.length > fsEst * 15) breathHist.shift();
-    }
     R.t.push(tn); R.gx.push(r.beta || 0); R.gy.push(r.gamma || 0); R.az.push(a.z || 0);
     while (R.t.length && R.t[0] < tn - 14) { R.t.shift(); R.gx.shift(); R.gy.shift(); R.az.shift(); }
     if (!recording) return;
@@ -1196,7 +1141,9 @@ $('#btn-live').onclick = async () => {
       : 'This browser did not give the page any motion data. Open Sternum on your phone (Safari on iPhone, Chrome on Android) over https and allow motion access when asked.');
     return;
   }
-  ui.sensors.textContent = hasGyro ? 'accelerometer + gyroscope' : 'accelerometer';
+  // the safety note gets the screen to itself for 3 s
+  await new Promise(r => setTimeout(r, Math.max(0, 3000 - (performance.now() - tShown))));
+  show('#live-settle'); $('#live-actions').hidden = false;
 
   const css = getComputedStyle(document.documentElement);
   const col = n => css.getPropertyValue(n).trim() || '#c2313b';
@@ -1225,12 +1172,11 @@ $('#btn-live').onclick = async () => {
       const tn = now();
       if (phase === 'settle') {
         const left = SETTLE - (tn - tStart);
-        ui.phase.textContent = 'Lie back, phone on your breastbone';
-        ui.count.textContent = Math.max(1, Math.ceil(left)); ui.unit.textContent = 's to start';
-        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); $('#live-settle').hidden = true; $('#live-traces').hidden = false; }
+        ui.settleCount.textContent = Math.max(1, Math.ceil(left));
+        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); show('#live-rec'); ui.stop.hidden = false; }
       } else {
         const el = tn - t0;
-        ui.phase.textContent = 'Recording. Breathe normally, keep still';
+        ui.phase.textContent = 'Recording. Keep still';
         ui.count.textContent = Math.max(0, Math.ceil(DUR - el)); ui.unit.textContent = 's left';
         ui.bar.style.width = Math.min(100, 100 * el / DUR) + '%';
         ui.stop.disabled = el < 20;
@@ -1239,16 +1185,10 @@ $('#btn-live').onclick = async () => {
       if (tn - lastHR > 2 && R.t.length > 300) {
         lastHR = tn;
         const q = DSP.quickHR(R.t, hasGyro ? [R.gx, R.gy, R.az] : [R.az]);
-        if (q && q.q >= 0.3) { ui.bpm.textContent = Math.round(q.hr); ui.bpmNote.textContent = q.q >= 0.5 ? 'bpm, strong signal' : 'bpm, weak signal'; }
+        if (q && q.q >= 0.3) { ui.bpm.textContent = Math.round(q.hr); ui.bpmNote.textContent = q.q >= 0.5 ? 'bpm' : 'bpm, weak signal'; }
         else { ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse, keep still'; }
       }
       drawTrace($('#scope-heart'), scope, col('--pulse'));
-      drawTrace($('#scope-breath'), breathHist, col('--breath'));
-      if (breathHist.length > 10) {
-        let lo = Infinity, hi = -Infinity; for (const v of breathHist) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
-        const f = hi > lo ? (breathHist[breathHist.length - 1] - lo) / (hi - lo) : 0.5;
-        ui.dot.setAttribute('r', (18 + 36 * f).toFixed(1));
-      }
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
@@ -1267,9 +1207,11 @@ $('#btn-live').onclick = async () => {
 
 /* ---------- start ---------- */
 S.sessions = loadLocal();
-const showWelcome = () => { fillProfile($('#welcome')); $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
-$('#btn-welcome').onclick = () => { saveProfile($('#welcome')); renderTodos(); $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
+const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
+$('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
+fillProfile($('#pf-settings'));
+$('#btn-pf-save').onclick = () => { saveProfile($('#pf-settings')); renderTodos(); $('#pf-saved').hidden = false; setTimeout(() => $('#pf-saved').hidden = true, 1800); };
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
