@@ -153,12 +153,19 @@ details.sim[open] summary { margin-bottom: 8px }
 figure { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
 figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted) }
 .trace canvas { width: 100%; height: 120px; display: block; background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
-.live-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: end }
-.live-row .trace canvas { height: 120px }
-.breath svg { width: 120px; height: 120px }
-#breath-dot { transition: r .2s linear }
-.live-settle, .live-traces { display: flex; flex-direction: column; gap: 14px }
-.live-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; margin-top: auto }
+.live-settle, .live-rec, .live-traces { display: flex; flex-direction: column; gap: 14px }
+.live-settle { flex: 1; justify-content: center }
+.live-rec .trace canvas { height: 100px }
+.live-actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 12px; margin-top: auto }
+.live-warn { flex: 1; display: grid; place-items: center }
+.warn-card { border: 2px solid var(--alert); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, var(--alert) 7%, var(--bg)) }
+.warn-card b { color: var(--alert); font: 700 1.5rem/1.15 var(--display) }
+.warn-card p { margin: 0; font-size: 1.05rem }
+.settle-top { display: flex; justify-content: space-between; align-items: center; gap: 12px }
+.settle-top h2 { margin: 0 }
+.settle-top p { margin: 2px 0 0 }
+#settle-count { font: 700 3.6rem/1 var(--display); font-variant-numeric: tabular-nums; color: var(--pulse); min-width: 2ch; text-align: right }
+.live-settle > p { margin: 0 }
 
 .signs { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px }
 .signs > div { background: var(--soft); border-radius: 10px; padding: 10px 12px; min-width: 0 }
@@ -299,16 +306,20 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
         <span>Sternum is a personal curiosity project. It can be wrong, and it may not notice a condition you already have, so a normal result never rules anything out.</span>
         <span>Chest pain, fainting, severe breathlessness or a racing heart that won't settle: call emergency services, don't take a reading.</span>
       </div>
-      <div class="about-you"><b class="small">About you (optional)</b><span class="small muted">Helps explain your numbers before you have a baseline. Stays on this phone.</span><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div></div>
       <button class="go" id="btn-welcome">I understand, let's start</button>
     </div>
   </section>
   <section class="live" id="live" hidden aria-live="polite">
     <div class="live-in">
-      <div class="live-head"><span id="live-phase" class="tall-sm">Get settled</span><span id="live-sensors" class="small muted"></span></div>
-      <div class="live-time"><span id="live-count" class="tall">10</span><span class="unit tall-sm" id="live-unit">s to start</span></div>
-      <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
-      <div id="live-settle" class="live-settle">
+      <div id="live-warn" class="live-warn">
+        <div class="warn-card" role="alert">
+          <b>A curiosity, not a medical device</b>
+          <p>Sternum can be wrong, and a normal result never rules anything out.</p>
+          <p>If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading. Call emergency services or see a doctor.</p>
+        </div>
+      </div>
+      <div id="live-settle" class="live-settle" hidden>
+        <div class="settle-top"><div><h2>Get into position</h2><p class="muted">Recording starts in</p></div><span id="settle-count">10</span></div>
       <figure class="pose" aria-label="Lie flat on your back. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
         <svg viewBox="0 0 360 176" aria-hidden="true">
           <defs>
@@ -352,17 +363,18 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
           </g>
         </svg>
       </figure>
-      <p class="disclaimer"><b>A curiosity, not a medical device.</b> If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading: call emergency services or see a doctor.</p>
+        <p class="muted">Arms relaxed at your sides. Breathe normally and keep still.</p>
       </div>
-      <div class="live-hr"><span class="k tall-sm">Heart rate</span><span class="huge tall" id="live-bpm">--</span><span class="k tall-sm" id="live-bpm-note">finding your pulse</span></div>
-      <div id="live-traces" class="live-traces" hidden>
+      <div id="live-rec" class="live-rec" hidden>
+      <div class="live-head"><span id="live-phase" class="tall-sm">Recording</span></div>
+      <div class="live-time"><span id="live-count" class="tall">60</span><span class="unit tall-sm" id="live-unit">s left</span></div>
+      <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
+      <div class="live-hr" aria-label="Heart rate"><span class="huge tall" id="live-bpm">--</span><span class="k tall-sm" id="live-bpm-note">finding your pulse</span></div>
+      <div id="live-traces" class="live-traces">
       <figure class="trace"><figcaption>Chest motion</figcaption><canvas id="scope-heart" aria-label="Live chest motion"></canvas></figure>
-      <div class="live-row">
-        <figure class="breath"><figcaption>Breathing</figcaption><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="none" stroke="var(--line)" stroke-width="2"/><circle id="breath-dot" cx="60" cy="60" r="30" fill="var(--breath-soft)" stroke="var(--breath)" stroke-width="2"/></svg></figure>
-        <figure class="trace"><figcaption>Breathing trace</figcaption><canvas id="scope-breath" aria-label="Live breathing trace"></canvas></figure>
       </div>
       </div>
-      <div class="live-actions"><button class="big-quiet" id="btn-cancel">Cancel</button><button class="go" id="btn-stop">Finish now</button></div>
+      <div class="live-actions" id="live-actions" hidden><button class="big-quiet" id="btn-cancel">Cancel</button><button class="go" id="btn-stop">Finish now</button></div>
     </div>
   </section>
 
@@ -425,6 +437,12 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
           <li><b>REFLECS heart-failure study</b>: 1,003 people, a phone on the sternum for 2 minutes; it recognised heart failure with an AUC of 0.95, and the gyroscope beat the accelerometer (<a href="https://www.acc.org/latest-in-cardiology/journal-scans/2024/04/11/13/57/smartphone-based-recognition-of-hf" target="_blank" rel="noopener">JACC: Heart Failure, 2024</a>; <a href="https://clinicaltrials.gov/study/NCT04444583" target="_blank" rel="noopener">trial record</a>).</li>
           <li><b>Related consumer devices</b>: digital stethoscopes such as Eko analyse heart sounds; smartwatches flag irregular rhythm and breathing disturbances from wrist sensors.</li>
         </ul>
+      </section>
+      <div class="sep"></div>
+      <section id="settings">
+        <h2>About you (optional)</h2>
+        <p class="small muted">Your age range lets Sternum say what's typical before your own baseline builds up. Sex only fine-tunes the wording. Both stay on this phone, and you can leave them blank.</p>
+        <div class="about-you" id="pf-settings"><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div><div class="row"><button id="btn-pf-save">Save</button><span class="small muted" id="pf-saved" hidden>Saved</span></div></div>
       </section>
       <div class="sep"></div>
       <section>
@@ -1073,9 +1091,10 @@ $('#btn-live').onclick = async () => {
   const AC = window.AudioContext || window.webkitAudioContext; let ac = null; try { ac = new AC(); ac.resume && ac.resume(); } catch { }
   const motionAsk = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function' ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : Promise.resolve('granted');
   $('#start-msg').hidden = true;
-  const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), sensors: $('#live-sensors'), stop: $('#btn-stop'), dot: $('#breath-dot') };
-  ui.live.hidden = false; document.body.style.overflow = 'hidden'; $('#live-settle').hidden = false; $('#live-traces').hidden = true;
-  ui.phase.textContent = 'Asking for sensor access'; ui.count.textContent = ''; ui.unit.textContent = ''; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
+  const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), settleCount: $('#settle-count'), stop: $('#btn-stop') };
+  const tShown = performance.now(), show = id => ['#live-warn', '#live-settle', '#live-rec'].forEach(k => $(k).hidden = k !== id);
+  ui.live.hidden = false; document.body.style.overflow = 'hidden'; show('#live-warn'); $('#live-actions').hidden = true; ui.stop.hidden = true;
+  ui.settleCount.textContent = '10'; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
 
   // chimes should sound even with the ring/silent switch on
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { }
@@ -1083,8 +1102,8 @@ $('#btn-live').onclick = async () => {
 
   const M = { t: [], ax: [], ay: [], az: [], gx: [], gy: [], gz: [], tx: [], ty: [], tz: [] };
   const R = { t: [], gx: [], gy: [], az: [] };          // rolling 14 s for the live heart rate
-  const scope = [], breathHist = [];
-  let recording = false, t0 = 0, motionSeen = false, hasGyro = false, filt = null, fsEst = 60, lpT = null, slowT = null;
+  const scope = [];
+  let recording = false, t0 = 0, motionSeen = false, hasGyro = false, filt = null, fsEst = 60;
   const now = () => performance.now() / 1000;
   const onMotion = e => {
     const tn = e.timeStamp > 0 ? e.timeStamp / 1000 : now();
@@ -1094,13 +1113,6 @@ $('#btn-live').onclick = async () => {
     if (!filt) { const hi = Math.min(20, fsEst * 0.4); filt = [bqStream(bqCo('hp', 4, fsEst)), bqStream(bqCo('lp', hi, fsEst))]; }
     const raw = hasGyro ? (r.beta || 0) : (a.z || 0);
     scope.push(filt[1](filt[0](raw))); if (scope.length > fsEst * 6) scope.shift();
-    // breathing: chest tilt, smoothed, minus its slow drift
-    if (g.z != null) {
-      const tilt = Math.atan2(g.y || 0, g.z) + Math.atan2(g.x || 0, g.z);
-      const k1 = 1 - Math.exp(-2 * Math.PI * 0.6 / fsEst), k2 = 1 - Math.exp(-2 * Math.PI * 0.04 / fsEst);
-      lpT = lpT == null ? tilt : lpT + k1 * (tilt - lpT); slowT = slowT == null ? tilt : slowT + k2 * (lpT - slowT);
-      breathHist.push(lpT - slowT); if (breathHist.length > fsEst * 15) breathHist.shift();
-    }
     R.t.push(tn); R.gx.push(r.beta || 0); R.gy.push(r.gamma || 0); R.az.push(a.z || 0);
     while (R.t.length && R.t[0] < tn - 14) { R.t.shift(); R.gx.shift(); R.gy.shift(); R.az.shift(); }
     if (!recording) return;
@@ -1129,7 +1141,9 @@ $('#btn-live').onclick = async () => {
       : 'This browser did not give the page any motion data. Open Sternum on your phone (Safari on iPhone, Chrome on Android) over https and allow motion access when asked.');
     return;
   }
-  ui.sensors.textContent = hasGyro ? 'accelerometer + gyroscope' : 'accelerometer';
+  // the safety note gets the screen to itself for 3 s
+  await new Promise(r => setTimeout(r, Math.max(0, 3000 - (performance.now() - tShown))));
+  show('#live-settle'); $('#live-actions').hidden = false;
 
   const css = getComputedStyle(document.documentElement);
   const col = n => css.getPropertyValue(n).trim() || '#c2313b';
@@ -1158,12 +1172,11 @@ $('#btn-live').onclick = async () => {
       const tn = now();
       if (phase === 'settle') {
         const left = SETTLE - (tn - tStart);
-        ui.phase.textContent = 'Lie back, phone on your breastbone';
-        ui.count.textContent = Math.max(1, Math.ceil(left)); ui.unit.textContent = 's to start';
-        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); $('#live-settle').hidden = true; $('#live-traces').hidden = false; }
+        ui.settleCount.textContent = Math.max(1, Math.ceil(left));
+        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); show('#live-rec'); ui.stop.hidden = false; }
       } else {
         const el = tn - t0;
-        ui.phase.textContent = 'Recording. Breathe normally, keep still';
+        ui.phase.textContent = 'Recording. Keep still';
         ui.count.textContent = Math.max(0, Math.ceil(DUR - el)); ui.unit.textContent = 's left';
         ui.bar.style.width = Math.min(100, 100 * el / DUR) + '%';
         ui.stop.disabled = el < 20;
@@ -1172,16 +1185,10 @@ $('#btn-live').onclick = async () => {
       if (tn - lastHR > 2 && R.t.length > 300) {
         lastHR = tn;
         const q = DSP.quickHR(R.t, hasGyro ? [R.gx, R.gy, R.az] : [R.az]);
-        if (q && q.q >= 0.3) { ui.bpm.textContent = Math.round(q.hr); ui.bpmNote.textContent = q.q >= 0.5 ? 'bpm, strong signal' : 'bpm, weak signal'; }
+        if (q && q.q >= 0.3) { ui.bpm.textContent = Math.round(q.hr); ui.bpmNote.textContent = q.q >= 0.5 ? 'bpm' : 'bpm, weak signal'; }
         else { ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse, keep still'; }
       }
       drawTrace($('#scope-heart'), scope, col('--pulse'));
-      drawTrace($('#scope-breath'), breathHist, col('--breath'));
-      if (breathHist.length > 10) {
-        let lo = Infinity, hi = -Infinity; for (const v of breathHist) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
-        const f = hi > lo ? (breathHist[breathHist.length - 1] - lo) / (hi - lo) : 0.5;
-        ui.dot.setAttribute('r', (18 + 36 * f).toFixed(1));
-      }
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
@@ -1200,9 +1207,11 @@ $('#btn-live').onclick = async () => {
 
 /* ---------- start ---------- */
 S.sessions = loadLocal();
-const showWelcome = () => { fillProfile($('#welcome')); $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
-$('#btn-welcome').onclick = () => { saveProfile($('#welcome')); renderTodos(); $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
+const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
+$('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
+fillProfile($('#pf-settings'));
+$('#btn-pf-save').onclick = () => { saveProfile($('#pf-settings')); renderTodos(); $('#pf-saved').hidden = false; setTimeout(() => $('#pf-saved').hidden = true, 1800); };
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
