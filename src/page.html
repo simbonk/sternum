@@ -7,6 +7,7 @@
   --pulse: #C2313B; --pulse-soft: rgba(194,49,59,.12); --breath: #1B7383; --breath-soft: rgba(27,115,131,.14);
   --base: #7D8894; --good: #23784A; --warn: #A86A12; --alert: #B42318;
   --good-bg: rgba(35,120,74,.1); --warn-bg: rgba(168,106,18,.12); --alert-bg: rgba(180,35,24,.1);
+  --device: #121920;
   --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body: "IBM Plex Sans", -apple-system, "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
@@ -14,13 +15,13 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0D1217; --panel: #141B22; --ink: #E6EBEF; --muted: #96A2AD; --line: #27323C; --soft: #1B242C;
   --pulse: #F26D74; --pulse-soft: rgba(242,109,116,.16); --breath: #56B9C9; --breath-soft: rgba(86,185,201,.16);
-  --base: #8994A0; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
+  --base: #8994A0; --device: #4E5B67; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
   --good-bg: rgba(91,194,138,.12); --warn-bg: rgba(226,168,74,.13); --alert-bg: rgba(255,122,110,.13);
   color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #0D1217; --panel: #141B22; --ink: #E6EBEF; --muted: #96A2AD; --line: #27323C; --soft: #1B242C;
   --pulse: #F26D74; --pulse-soft: rgba(242,109,116,.16); --breath: #56B9C9; --breath-soft: rgba(86,185,201,.16);
-  --base: #8994A0; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
+  --base: #8994A0; --device: #4E5B67; --good: #5BC28A; --warn: #E2A84A; --alert: #FF7A6E;
   --good-bg: rgba(91,194,138,.12); --warn-bg: rgba(226,168,74,.13); --alert-bg: rgba(255,122,110,.13);
   color-scheme: dark }
 
@@ -211,22 +212,25 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .welcome .brandline img { width: 40px; height: 40px; border-radius: 10px }
 .disclaimer { font-size: .84rem; color: var(--muted); border-left: 3px solid var(--alert); padding: 2px 0 2px 10px; max-width: 65ch }
 .disclaimer b { color: var(--ink); font-weight: 600 }
-.pose { margin: 0; background: var(--soft); border-radius: 12px; padding: 10px 8px 6px }
-.pose svg { display: block; width: 100%; height: auto; max-width: 460px; margin: 0 auto; overflow: visible }
-.pose text { font-family: var(--body); font-size: 11px; fill: var(--muted) }
-.pose .em { fill: var(--ink); font-weight: 600 }
+.pose { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px 6px }
+.pose svg { display: block; width: 100%; height: auto; max-width: 480px; margin: 0 auto; overflow: visible }
+.pose text { font-family: var(--body) }
+.pose .cap { font-size: 11px; font-weight: 500; fill: var(--muted) }
+.pose .lab { font-size: 10px; font-weight: 600; fill: var(--ink) }
+.pose .lab2 { font-size: 9.5px; fill: var(--muted) }
+.pose .scr { font: 700 13px var(--mono); fill: var(--pulse) }
 .pose .ph, .pose .ph2, .pose .breathe, .pose .beat { transform-box: fill-box; transform-origin: center }
-.pose .ph { animation: ph-drop 7s ease-in-out infinite }
-.pose .ph2 { animation: ph-place 7s ease-in-out infinite }
-.pose .breathe { animation: breathe 4s ease-in-out infinite }
-.pose .beat { opacity: 0; animation: beat-ring 1s ease-out infinite; animation-delay: 2.2s }
+.pose .ph { animation: ph-drop 7s cubic-bezier(.2,.7,.2,1) infinite }
+.pose .ph2 { animation: ph-place 7s cubic-bezier(.2,.7,.2,1) infinite }
+.pose .breathe { animation: breathe 4.2s ease-in-out infinite }
+.pose .beat { opacity: 0; animation: beat-ring 1s ease-out infinite; animation-delay: 2.1s }
 .pose .sight { animation: sight 7s ease-in-out infinite }
-@keyframes ph-drop { 0% { transform: translateY(-34px); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
-@keyframes ph-place { 0% { transform: scale(1.35) rotate(-20deg); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
-@keyframes breathe { 0%, 100% { transform: none } 50% { transform: translateY(-2px) } }
-@keyframes beat-ring { 0% { transform: scale(.5); opacity: .55 } 100% { transform: scale(1.25); opacity: 0 } }
-@keyframes sight { 0%, 30% { opacity: 0 } 40%, 100% { opacity: 1 } }
-@media (prefers-reduced-motion: reduce) { .pose .ph, .pose .ph2, .pose .breathe, .pose .beat, .pose .sight { animation: none } .pose .beat { opacity: .3 } }
+@keyframes ph-drop { 0% { transform: translateY(-28px); opacity: 0 } 8% { opacity: 1 } 26%, 100% { transform: none; opacity: 1 } }
+@keyframes ph-place { 0% { transform: scale(1.25); opacity: 0 } 8% { opacity: 1 } 26%, 100% { transform: none; opacity: 1 } }
+@keyframes breathe { 0%, 100% { transform: none } 50% { transform: translateY(-1.5px) } }
+@keyframes beat-ring { 0% { transform: scale(1); opacity: .5 } 100% { transform: scale(1.18); opacity: 0 } }
+@keyframes sight { 0%, 30% { opacity: 0 } 42%, 100% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .pose .ph, .pose .ph2, .pose .breathe, .pose .beat, .pose .sight { animation: none } .pose .beat { opacity: .25 } }
 .desk { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px }
 .desk .qr { width: 132px; height: 132px; background: #fff; border-radius: 10px; padding: 6px; display: grid; place-items: center }
 .desk .qr svg { width: 100%; height: 100% }
@@ -254,44 +258,6 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
   <main id="view-record" class="wrap" role="tabpanel" aria-labelledby="tab-record" data-view="record">
     <section class="panel start" id="start-panel">
       <h2>Take a reading</h2>
-      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
-          <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
-            <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
-            </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
-          </g>
-          <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
-            <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
-            </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
-          </g>
-        </svg>
-      </figure>
       <ol class="steps">
         <li>Lie flat on your back. Take the phone out of its case and lay it screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down at the screen.</li>
         <li>Tap <b>Start</b>. You get 10 seconds to settle, then a soft chime: breathe normally and keep still.</li>
@@ -343,41 +309,45 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
       <div class="live-time"><span id="live-count" class="tall">10</span><span class="unit tall-sm" id="live-unit">s to start</span></div>
       <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
       <div id="live-settle" class="live-settle">
-      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
+      <figure class="pose" aria-label="Lie flat on your back. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
+        <svg viewBox="0 0 360 176" aria-hidden="true">
+          <defs>
+            <linearGradient id="pose-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--muted)" stop-opacity=".30"/><stop offset="1" stop-color="var(--muted)" stop-opacity=".16"/></linearGradient>
+            <linearGradient id="pose-fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="var(--muted)" stop-opacity=".26"/><stop offset="1" stop-color="var(--muted)" stop-opacity="0"/></linearGradient>
+            <filter id="pose-shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity=".25"/></filter>
+          </defs>
+          <!-- side view: lying flat, phone on the lower breastbone -->
           <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
+            <rect x="4" y="124" width="170" height="14" rx="7" fill="var(--panel)" stroke="var(--line)"/>
+            <rect x="8" y="112" width="40" height="12" rx="6" fill="var(--panel)" stroke="var(--line)"/>
             <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
+              <path d="M30 124V116C36 111 44 106 56 102C70 97 86 96 98 100C110 103 122 105 134 108L158 110C163 104 168 102 170 106C171 110 171 117 169 124Z" fill="url(#pose-body)"/>
+              <g class="ph"><g transform="rotate(5 95 96)"><rect x="80" y="93.5" width="30" height="5" rx="2.2" fill="var(--device)" filter="url(#pose-shadow)"/><rect x="82" y="93.1" width="26" height="1.1" rx=".5" fill="var(--pulse)"/></g></g>
             </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
+            <circle cx="29" cy="108" r="11.5" fill="url(#pose-body)"/>
+            <circle cx="35" cy="102.5" r="1.4" fill="var(--ink)" opacity=".55"/>
+            <path class="sight" d="M37 101L82 91" stroke="var(--breath)" stroke-width="1.4" stroke-dasharray="2.5 3" stroke-linecap="round" fill="none"/>
+            <text x="88" y="160" text-anchor="middle" class="cap">Lie flat on your back</text>
           </g>
+          <!-- top view: phone lengthwise, bottom edge toward the chin -->
           <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
+            <ellipse cx="270" cy="20" rx="12.5" ry="14.5" fill="url(#pose-body)"/>
+            <path d="M262 32C262 38 258 41 250 43C236 46 222 47 214 54C206 61 204 72 204 86V150H336V86C336 72 334 61 326 54C318 47 304 46 290 43C282 41 278 38 278 32Z" fill="url(#pose-fade)"/>
+            <path d="M270 54V118" stroke="var(--muted)" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+            <rect class="beat" x="254" y="70" width="32" height="62" rx="8" fill="none" stroke="var(--pulse)" stroke-width="2"/>
             <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
+              <rect x="255" y="71" width="30" height="60" rx="7" fill="var(--device)" stroke="var(--line)" stroke-width=".8" filter="url(#pose-shadow)"/>
+              <rect x="257.2" y="73.2" width="25.6" height="55.6" rx="5" fill="var(--panel)"/>
+              <rect x="264" y="75.6" width="12" height="1.3" rx=".65" fill="var(--muted)"/>
+              <rect x="265" y="124.6" width="10" height="3" rx="1.5" fill="var(--device)"/>
+              <g transform="rotate(180 270 100)"><text x="270" y="106" text-anchor="middle" class="scr" transform="translate(0 -60) scale(1 1.6)">72</text></g>
             </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow3)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
+            <path d="M302 33C298 50 292 62 287 72" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-opacity=".7"/>
+            <circle cx="287" cy="72" r="2" fill="var(--ink)"/>
+            <rect x="290" y="7" width="66" height="28" rx="8" fill="var(--panel)" stroke="var(--line)"/>
+            <text x="323" y="19" text-anchor="middle" class="lab">Bottom edge</text>
+            <text x="323" y="30" text-anchor="middle" class="lab2">toward chin</text>
+            <text x="270" y="166" text-anchor="middle" class="cap">Screen up, on the lower breastbone</text>
           </g>
         </svg>
       </figure>
@@ -406,44 +376,6 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
         </div>
         <section>
           <h2>How to take a good reading</h2>
-          <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
-        <svg viewBox="0 0 360 168" aria-hidden="true">
-          <defs><marker id="pose-arrow2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
-          <g>
-            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
-            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
-            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
-            <g class="breathe">
-              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
-            </g>
-            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
-            <text x="8" y="74" class="em">glance down</text>
-            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
-          </g>
-          <g>
-            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
-            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
-            <g class="ph2">
-              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
-              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
-              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
-              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
-              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
-            </g>
-            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow2)"/>
-            <text x="308" y="14" class="em">bottom edge</text>
-            <text x="308" y="27">toward chin</text>
-            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
-          </g>
-        </svg>
-      </figure>
           <ol>
             <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on a bed, with one thin pillow at most, and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
             <li>Take the phone out of its case and lay it screen up, flat and lengthwise along the lower half of your breastbone (the flat bone in the middle of your chest), with its bottom edge toward your chin. Then a glance down shows the countdown and your heart rate the right way up.</li>

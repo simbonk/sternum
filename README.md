@@ -7,7 +7,7 @@ Sternum is a web app that turns a phone's motion sensors into a heart and breath
 **Try it on your phone: [sternum-chi.vercel.app](https://sternum-chi.vercel.app)** (open it on a computer and you get a QR code to scan).
 
 <p>
-  <img src="docs/record.png" width="200" alt="Record screen with a diagram of where to put the phone">
+  <img src="docs/record.png" width="200" alt="Record screen">
   <img src="docs/countdown.png" width="200" alt="Countdown screen with the placement diagram and safety note">
   <img src="docs/recording.png" width="200" alt="Recording screen with a tall countdown and heart rate">
   <img src="docs/reading.png" width="200" alt="A reading explained in plain English">
