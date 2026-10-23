@@ -119,7 +119,17 @@ label.check { display: flex; gap: 8px; align-items: center; font-size: .9rem }
 .base-mark { font: 500 .68rem var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--breath); margin-left: 6px }
 
 .guide { display: flex; flex-direction: column; gap: 22px }
-.guide section { display: flex; flex-direction: column; gap: 10px }
+.guide section, .gsec-body { display: flex; flex-direction: column; gap: 10px }
+.guide { gap: 0 }
+.guide .todos { margin-bottom: 18px }
+.gsec { border-top: 1px solid var(--line) }
+.gsec:last-child { border-bottom: 1px solid var(--line) }
+.gsec > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 6px 0 }
+.gsec > summary::-webkit-details-marker { display: none }
+.gsec > summary h2 { margin: 0; font-size: 1.1rem }
+.gsec > summary::after { content: ""; flex: none; width: 9px; height: 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg) translate(-2px, -2px); transition: transform .2s }
+.gsec[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px) }
+.gsec-body { padding: 2px 0 20px }
 .guide ol, .guide ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; max-width: 68ch }
 .sep { height: 1px; background: var(--line) }
 .start { gap: 16px }
@@ -372,8 +382,13 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
   <main id="view-sessions" class="wrap" role="tabpanel" aria-labelledby="tab-sessions" data-view="sessions" hidden></main>
   <main id="view-guide" class="wrap" role="tabpanel" aria-labelledby="tab-guide" data-view="guide" hidden>
     <article class="panel guide">
-        <section>
-          <h2>How to take a good reading</h2>
+      <section class="todos" aria-label="To do">
+          <div class="todo-track" id="todo-track"></div>
+          <div class="todo-dots" id="todo-dots"></div>
+        </section>
+      <details class="gsec" open>
+        <summary><h2>How to take a good reading</h2></summary>
+        <div class="gsec-body">
           <ol>
             <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on a bed, with one thin pillow at most, and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
             <li>Take the phone out of its case and lay it screen up, flat and lengthwise along the lower half of your breastbone (the flat bone in the middle of your chest), with its bottom edge toward your chin. Then a glance down shows the countdown and your heart rate the right way up.</li>
@@ -382,15 +397,25 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
             <li>Tag anything unusual (coffee, alcohol, short sleep, workout, feeling unwell). Tags explain outliers later.</li>
             <li>Mark 3–5 calm, typical mornings as your baseline. Until you do, the first three good readings are used.</li>
           </ol>
-        </section>
-        <div class="sep"></div>
-        <section class="todos" aria-label="To do">
-          <div class="todo-track" id="todo-track"></div>
-          <div class="todo-dots" id="todo-dots"></div>
-        </section>
-      <div class="sep"></div>
-      <section>
-        <h2>What the signals can tell you</h2>
+        </div>
+      </details>
+      <details class="gsec">
+        <summary><h2>What the numbers mean</h2></summary>
+        <div class="gsec-body">
+        <dl class="signs"><div><dt>Heart rate</dt><dd>Beats per minute while lying still. 50 to 100 is normal; fit people often sit in the 40s or 50s. A rise of 5 to 10 over your usual for a few days is the most common sign of illness, poor sleep or alcohol.</dd></div><div><dt>HRV</dt><dd>How much the gap between beats varies. Higher usually means rested and relaxed. It is very personal and drops with age, so only compare it with your own readings, and trust a trend over several days more than one low day.</dd></div><div><dt>Breathing</dt><dd>Breaths per minute. 12 to 20 is normal when awake; 8 to 12 is common lying relaxed. Over 20 at rest is fast.</dd></div><div><dt>Rhythm</dt><dd>Your heart speeds up a little when you breathe in and slows when you breathe out. That is normal. Sternum looks for gaps that jump around at random instead, which is what atrial fibrillation looks like.</dd></div><div><dt>Breath swing</dt><dd>How much your heart rate rises and falls within each breath. A clear swing (5+ bpm) means a relaxed, responsive nervous system; it gets smaller with age, stress and faster breathing.</dd></div><div><dt>Early beats</dt><dd>A beat that comes early, then a longer pause. Nearly everyone has some. Lots of them, or ones you feel with dizziness, are worth a check.</dd></div></dl>
+        <p class="small muted">Slow breathing makes both HRV and breath swing bigger, so compare readings taken the same way.</p>
+        </div>
+      </details>
+      <details class="gsec">
+        <summary><h2>Signs it can graph</h2></summary>
+        <div class="gsec-body">
+        <p class="small muted">These are wellness flags measured against your own baseline, not diagnoses.</p>
+        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 12 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
+        </div>
+      </details>
+      <details class="gsec">
+        <summary><h2>What the signals can tell you</h2></summary>
+        <div class="gsec-body">
         <ul>
           <li><b>Heart rate and beat timing.</b> Each beat jolts the chest (seismocardiography, from the accelerometer) and rocks it slightly (gyrocardiography, from the gyroscope). Sternum combines both, leaning on whichever shows the beat more clearly.</li>
           <li><b>Heart rate variability (RMSSD).</b> How much consecutive beats differ. Higher than your usual generally means rested; a sharp drop often follows poor sleep, alcohol, hard training or the start of an illness.</li>
@@ -400,42 +425,27 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
           <li><b>Beat shape.</b> The averaged chest-motion waveform has peaks linked to valves opening and closing. Research groups use it for cardiac timing and strength. Here it is compared against your baseline shape; most changes come from phone placement.</li>
         </ul>
         <p class="small muted">What it cannot do: blood pressure, oxygen, an electrical ECG, or heart sounds and murmurs. It never uses the microphone.</p>
-      </section>
-      <div class="sep"></div>
-      <section>
-        <h2>What the numbers mean</h2>
-        <dl class="signs"><div><dt>Heart rate</dt><dd>Beats per minute while lying still. 50 to 100 is normal; fit people often sit in the 40s or 50s. A rise of 5 to 10 over your usual for a few days is the most common sign of illness, poor sleep or alcohol.</dd></div><div><dt>HRV</dt><dd>How much the gap between beats varies. Higher usually means rested and relaxed. It is very personal and drops with age, so only compare it with your own readings, and trust a trend over several days more than one low day.</dd></div><div><dt>Breathing</dt><dd>Breaths per minute. 12 to 20 is normal when awake; 8 to 12 is common lying relaxed. Over 20 at rest is fast.</dd></div><div><dt>Rhythm</dt><dd>Your heart speeds up a little when you breathe in and slows when you breathe out. That is normal. Sternum looks for gaps that jump around at random instead, which is what atrial fibrillation looks like.</dd></div><div><dt>Breath swing</dt><dd>How much your heart rate rises and falls within each breath. A clear swing (5+ bpm) means a relaxed, responsive nervous system; it gets smaller with age, stress and faster breathing.</dd></div><div><dt>Early beats</dt><dd>A beat that comes early, then a longer pause. Nearly everyone has some. Lots of them, or ones you feel with dizziness, are worth a check.</dd></div></dl>
-        <p class="small muted">Slow breathing makes both HRV and breath swing bigger, so compare readings taken the same way.</p>
-      </section>
-      <div class="sep"></div>
-      <section>
-        <h2>Signs it can graph</h2>
-        <p class="small muted">These are wellness flags measured against your own baseline, not diagnoses.</p>
-        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 12 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
-      </section>
-      <div class="sep"></div>
-      <section>
-        <h2>Who else is doing this</h2>
+        </div>
+      </details>
+      <details class="gsec">
+        <summary><h2>How your data is kept</h2></summary>
+        <div class="gsec-body">
+        <p>Everything stays on this phone. Raw motion data from your last 10 readings is kept so you can share it in a chat with Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup, or attach the file to a chat with Claude to talk through your readings.</p>
+        <p class="small muted">Sternum makes no requests to other sites, and after the first visit it opens without a connection. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
+        <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
+        </div>
+      </details>
+      <details class="gsec">
+        <summary><h2>Who else is doing this</h2></summary>
+        <div class="gsec-body">
         <ul>
           <li><b>University of Turku and Precordior (Finland)</b> built smartphone mechanocardiography: a phone on the chest, accelerometer plus gyroscope, machine learning on top. Their 2018 study reported about 98% accuracy for detecting atrial fibrillation (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6008477" target="_blank" rel="noopener">Iftikhar et al., Scientific Reports</a>).</li>
           <li><b>CardioSignal</b> is the resulting app, aimed at detecting heart conditions from a one-minute phone-on-chest reading, EU-funded (<a href="https://cordis.europa.eu/project/id/954566" target="_blank" rel="noopener">CORDIS project</a>).</li>
           <li><b>REFLECS heart-failure study</b>: 1,003 people, a phone on the sternum for 2 minutes; it recognised heart failure with an AUC of 0.95, and the gyroscope beat the accelerometer (<a href="https://www.acc.org/latest-in-cardiology/journal-scans/2024/04/11/13/57/smartphone-based-recognition-of-hf" target="_blank" rel="noopener">JACC: Heart Failure, 2024</a>; <a href="https://clinicaltrials.gov/study/NCT04444583" target="_blank" rel="noopener">trial record</a>).</li>
           <li><b>Related consumer devices</b>: digital stethoscopes such as Eko analyse heart sounds; smartwatches flag irregular rhythm and breathing disturbances from wrist sensors.</li>
         </ul>
-      </section>
-      <div class="sep"></div>
-      <section id="settings">
-        <h2>About you (optional)</h2>
-        <p class="small muted">Your age range lets Sternum say what's typical before your own baseline builds up. Sex only fine-tunes the wording. Both stay on this phone, and you can leave them blank.</p>
-        <div class="about-you" id="pf-settings"><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div><div class="row"><button id="btn-pf-save">Save</button><span class="small muted" id="pf-saved" hidden>Saved</span></div></div>
-      </section>
-      <div class="sep"></div>
-      <section>
-        <h2 id="privacy">How your data is kept</h2>
-        <p>Everything stays on this phone. Raw motion data from your last 10 readings is kept so you can share it in a chat with Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup, or attach the file to a chat with Claude to talk through your readings.</p>
-        <p class="small muted">Sternum makes no requests to other sites, and after the first visit it opens without a connection. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
-        <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
-      </section>
+        </div>
+      </details>
     </article>
   </main>
 </div>
@@ -1795,8 +1805,6 @@ S.sessions = loadLocal();
 const showWelcome = () => { $('#welcome').hidden = false; document.body.style.overflow = 'hidden'; };
 $('#btn-welcome').onclick = () => { $('#welcome').hidden = true; document.body.style.overflow = ''; try { localStorage.setItem('sternum.welcomed', '1'); } catch { } };
 $('#btn-intro').onclick = showWelcome;
-fillProfile($('#pf-settings'));
-$('#btn-pf-save').onclick = () => { saveProfile($('#pf-settings')); renderTodos(); $('#pf-saved').hidden = false; setTimeout(() => $('#pf-saved').hidden = true, 1800); };
 let welcomed = false; try { welcomed = !!localStorage.getItem('sternum.welcomed'); } catch { }
 if (!welcomed) showWelcome();
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; document.querySelectorAll('.btn-install').forEach(b => b.hidden = false); });
