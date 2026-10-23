@@ -155,8 +155,33 @@ const DSP = (() => {
     return filled;
   }
 
-  function rhythm(beats, fs, dur) {
-    const t = beats.map(i => i / fs), ibi = [];
+  // a second chest-motion complex (valve closing) can pass for a beat, splitting one interval into two halves;
+  // drop the middle beat when two short intervals add up to one normal one. An early beat gives short-then-long, not two halves.
+  function mergeSplit(beats) {
+    const out = beats.slice();
+    for (let pass = 0; pass < 2; pass++) {
+      const ibi = []; for (let i = 1; i < out.length; i++) ibi.push(out[i] - out[i - 1]);
+      const drop = new Set();
+      for (let i = 0; i + 1 < ibi.length; i++) {
+        const lm = median(ibi.slice(Math.max(0, i - 6), i + 8)), sum = ibi[i] + ibi[i + 1];
+        if (ibi[i] < 0.65 * lm && ibi[i + 1] < 0.65 * lm && Math.abs(sum - lm) < 0.15 * lm) { drop.add(i + 1); i++; }
+      }
+      if (!drop.size) break;
+      for (let k = out.length - 1; k >= 0; k--) if (drop.has(k)) out.splice(k, 1);
+    }
+    return out;
+  }
+
+  // sub-sample peak position from a parabola through the peak and its neighbours
+  function subPeak(x, i) {
+    if (i <= 0 || i >= x.length - 1) return i;
+    const a = x[i - 1], b = x[i], c = x[i + 1], d = a - 2 * b + c;
+    return d < 0 ? i + Math.max(-0.5, Math.min(0.5, 0.5 * (a - c) / d)) : i;
+  }
+
+  // pos: optional sub-sample beat positions, so beat timing is not stuck on the 10 ms sample grid
+  function rhythm(beats, fs, dur, pos) {
+    const t = (pos || beats).map(i => i / fs), ibi = [];
     for (let i = 1; i < t.length; i++) ibi.push(t[i] - t[i - 1]);
     const valid = ibi.map(v => v > 0.3 && v < 2.4);
     const lm = ibi.map((_, i) => median(ibi.slice(Math.max(0, i - 3), i + 4).filter((v, k) => v > 0.3 && v < 2.4)));
@@ -379,7 +404,7 @@ const DSP = (() => {
       if (wsum) for (let i = 0; i < comb.length; i++) comb[i] /= wsum;
       const p = period(comb, Math.round(0.33 * FS), Math.round(1.6 * FS));
       let main = envs.reduce((a, b) => b.q > a.q ? b : a);
-      let beats = Number.isFinite(p.lag) ? detectBeats(comb, FS, p.lag) : [];
+      let beats = Number.isFinite(p.lag) ? detectBeats(comb, FS, p.lag) : [], peakSig = comb;
       for (let pass = 0; pass < 3 && beats.length > 8; pass++) {
         // matched filter: correlate each channel with its own average beat, then combine
         const mf = new Float64Array(comb.length), a = Math.round(0.15 * FS), L = Math.round(0.6 * FS);
@@ -401,8 +426,10 @@ const DSP = (() => {
         // snap each beat to the sharpest matched-filter peak nearby
         const w = Math.round(0.08 * FS);
         beats = detectBeats(env2, FS, p.lag).map(i => { let b = i; for (let k = Math.max(0, i - w); k <= Math.min(mf.length - 1, i + w); k++) if (mf[k] > mf[b]) b = k; return b; });
+        peakSig = mf;
       }
-      const r = rhythm(beats, FS, dur);
+      beats = mergeSplit(beats);
+      const r = rhythm(beats, FS, dur, beats.map(i => subPeak(peakSig, i)));
       const tp = template(main.bp, beats, FS, 0.2, 0.6);
       // breathing from chest tilt (gravity) when present, otherwise integrated gyro, otherwise low-passed acceleration
       let bsig = null;
@@ -430,7 +457,7 @@ const DSP = (() => {
       const ae = audioEnvelope(rec.audio.samples, rec.audio.sr);
       const p = period(ae.env, Math.round(0.33 * FS), Math.round(1.6 * FS));
       const beats = Number.isFinite(p.lag) ? detectBeats(ae.env, FS, p.lag) : [];
-      const r = rhythm(beats, FS, ae.env.length / FS);
+      const r = rhythm(beats, FS, ae.env.length / FS, beats.map(i => subPeak(ae.env, i)));
       const hs = beats.length > 5 ? heartSounds(ae.sharp, beats, p.lag) : null;
       aud = { p, r, hs, env: ae.env, cons: consistency(ae.sharp, beats, FS, 0.15, 0.5) };
       res.quality.audio = round(aud.cons, 2);
@@ -476,7 +503,7 @@ const DSP = (() => {
     // compact traces for display (25 Hz) and beat-to-beat intervals in ms
     const ds = (x, f) => Array.from(decimate(x, f), v => round(v, 4));
     res.ibi = r.ibi.map(v => Math.round(v * 1000));
-    res.beatT = r.t.map(v => round(v, 2));
+    res.beatT = r.t.map(v => round(v, 3));
     res.traces = {};
     if (mot) {
       res.traces.beat = ds(mot.comb, 4);
@@ -518,6 +545,8 @@ const DSP = (() => {
       else if (opt.ectopic && rnd() < 0.06) { ibi *= 0.7; beats.push(t + ibi); t += ibi; ibi = 60 / hr * 1.3; }
       t += ibi * (1 + 0.01 * gauss());
     }
+    // accN: accelerometer noise, m/s². 0.005 is a quiet, well-placed phone; at 0.01 motion-only beat detection starts to slip
+    const accN = opt.noise ?? 0.01;
     const fs = 100, n = dur * fs, M = { t: [], ax: [], ay: [], az: [], gx: [], gy: [], gz: [], tx: [], ty: [], tz: [] };
     const burst = (dt, f, tau, a) => dt >= 0 && dt < 5 * tau ? a * Math.exp(-dt / tau) * Math.sin(2 * Math.PI * f * dt) : 0;
     let bi = 0;
@@ -531,7 +560,7 @@ const DSP = (() => {
       }
       const breath = 0.012 * Math.sin(2 * Math.PI * brpm / 60 * tt) + (opt.apnea && tt > 25 && tt < 38 ? -0.012 * Math.sin(2 * Math.PI * brpm / 60 * tt) : 0);
       M.t.push(i / fs);
-      M.az.push(scg + 0.01 * gauss()); M.ax.push(0.3 * scg + 0.01 * gauss()); M.ay.push(0.2 * scg + 0.01 * gauss());
+      M.az.push(scg + accN * gauss()); M.ax.push(0.3 * scg + accN * gauss()); M.ay.push(0.2 * scg + accN * gauss());
       M.gx.push(2.5 * scg + 0.04 * gauss()); M.gy.push(1.5 * scg + 0.04 * gauss()); M.gz.push(0.04 * gauss());
       M.tx.push(Math.sin(breath) * 9.81 + 0.002 * gauss()); M.ty.push(Math.sin(0.5 * breath) * 9.81 + 0.002 * gauss()); M.tz.push(-9.81 * Math.cos(breath));
     }

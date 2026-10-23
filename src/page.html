@@ -1,6 +1,5 @@
 <title>Sternum Heart Log</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 /* Layout: one calm column, like a bedside instrument; tabs on top, readouts first, traces under them. */
 :root {
@@ -139,6 +138,11 @@ details.sim[open] summary { margin-bottom: 8px }
 .live-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 600 }
 .live-time { display: flex; align-items: baseline; gap: 8px }
 #live-count { font: 700 3.4rem/1 var(--display); font-variant-numeric: tabular-nums }
+/* seen from your chin, the screen is foreshortened along its length; stretching the key numbers tall cancels that out */
+.tall { display: inline-block; transform: scaleY(2.4); transform-origin: 50% 100%; margin-top: 1.4em }
+.tall-sm { display: inline-block; transform: scaleY(1.8); transform-origin: 0 100%; margin-top: .8em }
+.live #live-count { font-size: 4.4rem; letter-spacing: -.02em }
+.live-hr .huge.tall { font-size: 4.4rem }
 .live-time .unit { color: var(--muted) }
 .bar { height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; width: 100% }
 .bar > i { display: block; height: 100%; width: 0; background: var(--pulse); transition: width .25s linear }
@@ -152,6 +156,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .live-row .trace canvas { height: 120px }
 .breath svg { width: 120px; height: 120px }
 #breath-dot { transition: r .2s linear }
+.live-settle, .live-traces { display: flex; flex-direction: column; gap: 14px }
 .live-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; margin-top: auto }
 
 .signs { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px }
@@ -201,6 +206,35 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .install .row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap }
 .local-pill { display: inline-flex; align-items: center; gap: 6px; font: 600 .78rem var(--body); color: var(--breath); background: var(--breath-soft); padding: 4px 10px; border-radius: 99px; border: 0; cursor: pointer }
 
+.lead { font-size: 1.08rem; line-height: 1.5 }
+.welcome .brandline { display: flex; align-items: center; gap: 10px; font: 700 1.1rem var(--display) }
+.welcome .brandline img { width: 40px; height: 40px; border-radius: 10px }
+.disclaimer { font-size: .84rem; color: var(--muted); border-left: 3px solid var(--alert); padding: 2px 0 2px 10px; max-width: 65ch }
+.disclaimer b { color: var(--ink); font-weight: 600 }
+.pose { margin: 0; background: var(--soft); border-radius: 12px; padding: 10px 8px 6px }
+.pose svg { display: block; width: 100%; height: auto; max-width: 460px; margin: 0 auto; overflow: visible }
+.pose text { font-family: var(--body); font-size: 11px; fill: var(--muted) }
+.pose .em { fill: var(--ink); font-weight: 600 }
+.pose .ph, .pose .ph2, .pose .breathe, .pose .beat { transform-box: fill-box; transform-origin: center }
+.pose .ph { animation: ph-drop 7s ease-in-out infinite }
+.pose .ph2 { animation: ph-place 7s ease-in-out infinite }
+.pose .breathe { animation: breathe 4s ease-in-out infinite }
+.pose .beat { opacity: 0; animation: beat-ring 1s ease-out infinite; animation-delay: 2.2s }
+.pose .sight { animation: sight 7s ease-in-out infinite }
+@keyframes ph-drop { 0% { transform: translateY(-34px); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
+@keyframes ph-place { 0% { transform: scale(1.35) rotate(-20deg); opacity: 0 } 10% { opacity: 1 } 28%, 100% { transform: none; opacity: 1 } }
+@keyframes breathe { 0%, 100% { transform: none } 50% { transform: translateY(-2px) } }
+@keyframes beat-ring { 0% { transform: scale(.5); opacity: .55 } 100% { transform: scale(1.25); opacity: 0 } }
+@keyframes sight { 0%, 30% { opacity: 0 } 40%, 100% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .pose .ph, .pose .ph2, .pose .breathe, .pose .beat, .pose .sight { animation: none } .pose .beat { opacity: .3 } }
+.desk { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 14px }
+.desk .qr { width: 132px; height: 132px; background: #fff; border-radius: 10px; padding: 6px; display: grid; place-items: center }
+.desk .qr svg { width: 100%; height: 100% }
+@media (max-width: 420px) { .desk { grid-template-columns: 1fr } }
+.example-card { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-radius: 10px; padding: 10px 14px; background: var(--soft); font-size: .88rem }
+details.more > summary, details.more-charts > summary { cursor: pointer; font-weight: 600; padding: 6px 0; color: var(--ink) }
+details.more[open] > summary, details.more-charts[open] > summary { margin-bottom: 10px }
+.more-in { display: flex; flex-direction: column; gap: 14px }
 .share { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; background: var(--breath-soft) }
 .share p { margin-top: 2px }
 
@@ -210,26 +244,69 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   <header class="top">
     <div class="brand"><span class="pulse-dot" aria-hidden="true"></span><h1>Sternum</h1><span class="tag">phone-on-chest heart &amp; breath log</span></div>
     <nav class="tabs" role="tablist">
-      <button role="tab" id="tab-record" data-tab="record" aria-selected="true">Record</button>
-      <button role="tab" id="tab-trends" data-tab="trends" aria-selected="false">Trends</button>
-      <button role="tab" id="tab-sessions" data-tab="sessions" aria-selected="false">Sessions</button>
-      <button role="tab" id="tab-guide" data-tab="guide" aria-selected="false">Guide</button>
+      <button role="tab" id="tab-record" aria-controls="view-record" data-tab="record" aria-selected="true">Record</button>
+      <button role="tab" id="tab-trends" aria-controls="view-trends" data-tab="trends" aria-selected="false">Trends</button>
+      <button role="tab" id="tab-sessions" aria-controls="view-sessions" data-tab="sessions" aria-selected="false">Sessions</button>
+      <button role="tab" id="tab-guide" aria-controls="view-guide" data-tab="guide" aria-selected="false">Guide</button>
     </nav>
   </header>
 
-  <main id="view-record" class="wrap" data-view="record">
+  <main id="view-record" class="wrap" role="tabpanel" aria-labelledby="tab-record" data-view="record">
     <section class="panel start" id="start-panel">
       <h2>Take a reading</h2>
+      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
+        <svg viewBox="0 0 360 168" aria-hidden="true">
+          <defs><marker id="pose-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
+          <g>
+            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
+            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
+            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
+            <g class="breathe">
+              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
+            </g>
+            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+            <text x="8" y="74" class="em">glance down</text>
+            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
+          </g>
+          <g>
+            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
+            <g class="ph2">
+              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
+              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
+              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
+              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
+              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
+            </g>
+            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow)"/>
+            <text x="308" y="14" class="em">bottom edge</text>
+            <text x="308" y="27">toward chin</text>
+            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
+          </g>
+        </svg>
+      </figure>
       <ol class="steps">
-        <li>Lie flat on your back. Take the phone out of its case and lay it screen up, lengthwise, on the lower half of your breastbone.</li>
+        <li>Lie flat on your back. Take the phone out of its case and lay it screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down at the screen.</li>
         <li>Tap <b>Start</b>. You get 10 seconds to settle, then a soft chime: breathe normally and keep still.</li>
         <li>A rising three-note chime means it's finished. The screen stays on the whole time.</li>
       </ol>
+      <div class="desk" id="desk" hidden>
+        <div class="qr" id="desk-qr" aria-label="QR code that opens this page"></div>
+        <div><b>Sternum records on a phone</b><p class="small muted">It reads your heart from your phone's motion sensors, which a computer doesn't have. Scan this with your phone's camera to open Sternum there. Meanwhile, look at the example reading or run a simulated one below.</p></div>
+      </div>
       <div class="seg" role="radiogroup" aria-label="Reading length">
         <button role="radio" data-dur="60" aria-checked="true">60 s</button><button role="radio" data-dur="90" aria-checked="false">90 s</button><button role="radio" data-dur="120" aria-checked="false">2 min</button>
       </div>
       <button class="go" id="btn-live">Start reading</button>
-      <div id="example-note" class="banner" hidden>Trends and Sessions show example readings for now, so you can see how it looks. They disappear when you save your first reading.</div>
+      <p class="disclaimer"><b>A curiosity, not a medical device.</b> If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading: call emergency services or see a doctor.</p>
+      <div id="example-note" class="example-card" hidden><span>New here? Trends and Sessions show example readings until you save your own.</span><button id="btn-example">See an example reading</button></div>
       <div id="start-msg" class="banner warn" hidden></div>
       <details class="sim">
         <summary>Try a simulated reading</summary>
@@ -243,12 +320,13 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 
   <section class="welcome" id="welcome" hidden>
     <div class="welcome-in">
-      <div class="lock" style="color:var(--breath)"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg></div>
+      <div class="brandline"><img src="icons/icon-180.png" alt="" width="40" height="40">Sternum</div>
+      <p class="lead">Lie down, rest your phone on your chest for a minute, and Sternum reads your heart rate, heart rate variability and breathing from the tiny movements each heartbeat makes.</p>
       <h2>Your data stays on this phone</h2>
       <ul>
         <li>No account, no server, no cloud. Readings are worked out and stored right here in this browser.</li>
-        <li>Nothing is uploaded. Raw sound is never kept beyond your last 10 readings, and never sent anywhere.</li>
-        <li>The only way data leaves is a file you choose to save or share yourself.</li>
+        <li>It only uses the motion sensors. It never turns on the microphone or camera.</li>
+        <li>Nothing is uploaded. The only way data leaves is a file you choose to save or share yourself.</li>
       </ul>
       <div class="safety">
         <b>Experimental, not a medical device</b>
@@ -261,57 +339,137 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
   </section>
   <section class="live" id="live" hidden aria-live="polite">
     <div class="live-in">
-      <div class="live-head"><span id="live-phase">Get settled</span><span id="live-sensors" class="small muted"></span></div>
-      <div class="live-time"><span id="live-count">10</span><span class="unit" id="live-unit">s to start</span></div>
+      <div class="live-head"><span id="live-phase" class="tall-sm">Get settled</span><span id="live-sensors" class="small muted"></span></div>
+      <div class="live-time"><span id="live-count" class="tall">10</span><span class="unit tall-sm" id="live-unit">s to start</span></div>
       <div class="bar" aria-hidden="true"><i id="live-bar"></i></div>
-      <div class="live-hr"><span class="k">Heart rate</span><span class="huge" id="live-bpm">--</span><span class="k" id="live-bpm-note">finding your pulse</span></div>
+      <div id="live-settle" class="live-settle">
+      <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
+        <svg viewBox="0 0 360 168" aria-hidden="true">
+          <defs><marker id="pose-arrow3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
+          <g>
+            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
+            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
+            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
+            <g class="breathe">
+              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
+            </g>
+            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+            <text x="8" y="74" class="em">glance down</text>
+            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
+          </g>
+          <g>
+            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
+            <g class="ph2">
+              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
+              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
+              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
+              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
+              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
+            </g>
+            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow3)"/>
+            <text x="308" y="14" class="em">bottom edge</text>
+            <text x="308" y="27">toward chin</text>
+            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
+          </g>
+        </svg>
+      </figure>
+      <p class="disclaimer"><b>A curiosity, not a medical device.</b> If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading: call emergency services or see a doctor.</p>
+      </div>
+      <div class="live-hr"><span class="k tall-sm">Heart rate</span><span class="huge tall" id="live-bpm">--</span><span class="k tall-sm" id="live-bpm-note">finding your pulse</span></div>
+      <div id="live-traces" class="live-traces" hidden>
       <figure class="trace"><figcaption>Chest motion</figcaption><canvas id="scope-heart" aria-label="Live chest motion"></canvas></figure>
       <div class="live-row">
         <figure class="breath"><figcaption>Breathing</figcaption><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="none" stroke="var(--line)" stroke-width="2"/><circle id="breath-dot" cx="60" cy="60" r="30" fill="var(--breath-soft)" stroke="var(--breath)" stroke-width="2"/></svg></figure>
-        <figure class="trace"><figcaption>Sound</figcaption><canvas id="scope-mic" aria-label="Live microphone level"></canvas></figure>
+        <figure class="trace"><figcaption>Breathing trace</figcaption><canvas id="scope-breath" aria-label="Live breathing trace"></canvas></figure>
+      </div>
       </div>
       <div class="live-actions"><button class="big-quiet" id="btn-cancel">Cancel</button><button class="go" id="btn-stop">Finish now</button></div>
     </div>
   </section>
 
-  <main id="view-trends" class="wrap" data-view="trends" hidden></main>
-  <main id="view-sessions" class="wrap" data-view="sessions" hidden></main>
-  <main id="view-guide" class="wrap" data-view="guide" hidden>
+  <main id="view-trends" class="wrap" role="tabpanel" aria-labelledby="tab-trends" data-view="trends" hidden></main>
+  <main id="view-sessions" class="wrap" role="tabpanel" aria-labelledby="tab-sessions" data-view="sessions" hidden></main>
+  <main id="view-guide" class="wrap" role="tabpanel" aria-labelledby="tab-guide" data-view="guide" hidden>
     <article class="panel guide">
         <div class="danger" role="note">
           <b>Get help now, don't take a reading</b>
           <p>Chest pain, fainting, severe breathlessness, or a racing heart that won't settle: call emergency services or see a doctor.</p>
           <p>Sternum is not a medical device. It can't diagnose anything, and it may not notice a condition you already have, such as atrial fibrillation, a pacemaker rhythm or a valve problem. A "normal" result never rules one out. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</p>
         </div>
+        <section>
+          <h2>How to take a good reading</h2>
+          <figure class="pose" aria-label="Lie flat on your back on a bed. Lay the phone screen up, lengthwise on the lower half of your breastbone, with its bottom edge toward your chin so you can glance down and read it.">
+        <svg viewBox="0 0 360 168" aria-hidden="true">
+          <defs><marker id="pose-arrow2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="var(--pulse)"/></marker></defs>
+          <g>
+            <rect x="6" y="114" width="190" height="14" rx="5" fill="var(--panel)" stroke="var(--line)"/>
+            <ellipse cx="30" cy="108" rx="18" ry="5" fill="var(--panel)" stroke="var(--line)"/>
+            <circle cx="34" cy="93" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <circle cx="40" cy="89" r="1.6" fill="var(--muted)"/>
+            <g class="breathe">
+              <rect x="48" y="90" width="72" height="24" rx="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+              <g class="ph"><rect x="80" y="84" width="30" height="6" rx="2" fill="var(--pulse)"/></g>
+            </g>
+            <rect x="118" y="98" width="74" height="16" rx="8" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path class="sight" d="M42 87L84 80" stroke="var(--breath)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+            <text x="8" y="74" class="em">glance down</text>
+            <text x="100" y="152" text-anchor="middle">Flat on your back, arms by your sides</text>
+          </g>
+          <g>
+            <circle cx="290" cy="14" r="11" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M282 26v6M298 26v6" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M246 44 Q252 33 274 32 L306 32 Q328 33 334 44 L330 134 Q290 142 250 134 Z" fill="none" stroke="var(--muted)" stroke-width="2"/>
+            <path d="M290 40V104" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M266 58q24 9 48 0M262 74q28 10 56 0M260 90q30 10 60 0" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <circle class="beat" cx="290" cy="92" r="20" fill="none" stroke="var(--pulse)" stroke-width="2"/>
+            <g class="ph2">
+              <rect x="275" y="64" width="30" height="56" rx="6" fill="var(--pulse)"/>
+              <rect x="278" y="68" width="24" height="48" rx="3" fill="var(--panel)"/>
+              <rect x="283" y="70" width="14" height="1.6" rx=".8" fill="var(--muted)"/>
+              <rect x="286" y="110" width="8" height="3" rx="1.5" fill="var(--ink)"/>
+              <text x="290" y="94" text-anchor="middle" transform="rotate(180 290 92)" class="em" style="font-size:12px">72</text>
+            </g>
+            <path d="M314 36Q312 56 304 64" fill="none" stroke="var(--pulse)" stroke-width="1.5" marker-end="url(#pose-arrow2)"/>
+            <text x="308" y="14" class="em">bottom edge</text>
+            <text x="308" y="27">toward chin</text>
+            <text x="290" y="160" text-anchor="middle">On the lower breastbone</text>
+          </g>
+        </svg>
+      </figure>
+          <ol>
+            <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on a bed, with one thin pillow at most, and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
+            <li>Take the phone out of its case and lay it screen up, flat and lengthwise along the lower half of your breastbone (the flat bone in the middle of your chest), with its bottom edge toward your chin. Then a glance down shows the countdown and your heart rate the right way up.</li>
+            <li>Arms by your sides. Breathe normally, don't talk, keep still. Do Not Disturb stops a buzz from spoiling the reading.</li>
+            <li>Tap Start, settle during the 10-second countdown, and stay still until the closing chime. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
+            <li>Tag anything unusual (coffee, alcohol, short sleep, workout, feeling unwell). Tags explain outliers later.</li>
+            <li>Mark 3–5 calm, typical mornings as your baseline. Until you do, the first three good readings are used.</li>
+          </ol>
+        </section>
+        <div class="sep"></div>
         <section class="todos" aria-label="To do">
           <div class="todo-track" id="todo-track"></div>
           <div class="todo-dots" id="todo-dots"></div>
         </section>
       <div class="sep"></div>
       <section>
-        <h2>How to take a good reading</h2>
-        <ol>
-          <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on the bed and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
-          <li>Take the phone out of its case and lay it face up, flat and lengthwise on the lower half of your breastbone. Put the bottom edge (where the microphone is) slightly toward your left side.</li>
-          <li>Quiet room, phone on Do Not Disturb. Breathe normally, don't talk, keep still.</li>
-          <li>Tap Start, settle during the 10-second countdown, and stay still until the closing chime. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
-          <li>Tag anything unusual (coffee, alcohol, short sleep, workout, feeling unwell). Tags explain outliers later.</li>
-          <li>Mark 3–5 calm, typical mornings as your baseline. Until you do, the first three good readings are used.</li>
-        </ol>
-      </section>
-      <div class="sep"></div>
-      <section>
         <h2>What the signals can tell you</h2>
         <ul>
-          <li><b>Heart rate and beat timing.</b> Each beat jolts the chest (seismocardiography, from the accelerometer) and rocks it slightly (gyrocardiography, from the gyroscope). The microphone hears the first and second heart sounds (S1, S2). When both agree, the reading is more trustworthy.</li>
+          <li><b>Heart rate and beat timing.</b> Each beat jolts the chest (seismocardiography, from the accelerometer) and rocks it slightly (gyrocardiography, from the gyroscope). Sternum combines both, leaning on whichever shows the beat more clearly.</li>
           <li><b>Heart rate variability (RMSSD).</b> How much consecutive beats differ. Higher than your usual generally means rested; a sharp drop often follows poor sleep, alcohol, hard training or the start of an illness.</li>
           <li><b>Breathing rate, regularity and pauses.</b> The phone tilts as your chest rises, so the gravity reading traces each breath.</li>
           <li><b>Breath-linked heart swing.</b> Your heart speeds up on the in-breath and slows on the out-breath (respiratory sinus arrhythmia). A healthy, relaxed system shows a clear swing.</li>
           <li><b>Rhythm regularity and extra beats.</b> Large jumps between consecutive beats, and early beats followed by a pause, show up in the beat-interval chart and the Poincaré plot. A steady rhythm makes a tight comet shape; an irregular one scatters.</li>
-          <li><b>Heart sound timing.</b> The S1 to S2 gap approximates how long each contraction lasts (systole). It shortens as heart rate rises. In practice the iPhone microphone filters out most of the low rumble of heart sounds, so this often stays blank; it hears your breathing clearly instead, which double-checks the breathing rate.</li>
           <li><b>Beat shape.</b> The averaged chest-motion waveform has peaks linked to valves opening and closing. Research groups use it for cardiac timing and strength. Here it is compared against your baseline shape; most changes come from phone placement.</li>
         </ul>
-        <p class="small muted">What it cannot do: blood pressure, oxygen, an electrical ECG, or reliable murmur detection. A phone microphone is not a stethoscope.</p>
+        <p class="small muted">What it cannot do: blood pressure, oxygen, an electrical ECG, or heart sounds and murmurs. It never uses the microphone.</p>
       </section>
       <div class="sep"></div>
       <section>
@@ -323,7 +481,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <section>
         <h2>Signs it can graph</h2>
         <p class="small muted">These are wellness flags measured against your own baseline, not diagnoses.</p>
-        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 10 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
+        <dl class="signs"><div><dt>Resting heart rate up</dt><dd>Short sleep, alcohol, dehydration, stress, oncoming illness or fever</dd><dd class="when">Shows when: 8+ bpm above baseline, or over 100</dd></div><div><dt>HRV down</dt><dd>Same as above; often the earliest sign of being run down</dd><dd class="when">Shows when: About a third below baseline</dd></div><div><dt>Breathing faster</dt><dd>Illness, anxiety, fever, lung or heart strain</dd><dd class="when">Shows when: 3+ breaths/min above baseline, or over 20</dd></div><div><dt>Irregular rhythm</dt><dd>Beat gaps that jump around at random. Can be atrial fibrillation; movement and extra beats can mimic it</dd><dd class="when">Shows when: Big, random changes between beats in a clean recording of 40+ beats. The normal rise and fall with breathing is ignored</dd></div><div><dt>Extra beats</dt><dd>Premature beats; common with caffeine, stress, fatigue</dd><dd class="when">Shows when: 3 or more in a reading</dd></div><div><dt>Long gap between beats</dt><dd>Usually the phone losing a beat; occasionally a real pause</dd><dd class="when">Shows when: A gap over 2 s</dd></div><div><dt>Breathing pause</dt><dd>Breath-holding or a pause in breathing</dd><dd class="when">Shows when: No breathing motion for 12 s or more</dd></div><div><dt>Beat shape changed</dt><dd>Usually a different phone position; occasionally a real change</dd><dd class="when">Shows when: Low match with the baseline waveform</dd></div></dl>
       </section>
       <div class="sep"></div>
       <section>
@@ -338,8 +496,8 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
       <div class="sep"></div>
       <section>
         <h2 id="privacy">How your data is kept</h2>
-        <p>Everything stays on this phone. Raw sensor data from your last 10 readings is kept so you can share it in a chat with Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup, or attach the file to a chat with Claude to talk through your readings.</p>
-        <p class="small muted">The page loads its fonts from Google Fonts; no readings go with that request. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
+        <p>Everything stays on this phone. Raw motion data from your last 10 readings is kept so you can share it in a chat with Claude; older raw data is dropped automatically, but the numbers and charts stay. Use Sessions → Save file to keep a backup, or attach the file to a chat with Claude to talk through your readings.</p>
+        <p class="small muted">Sternum makes no requests to other sites, and after the first visit it opens without a connection. Clearing Safari's website data deletes your readings, and Safari may clear them itself if you don't open the site for 7 days, unless it's on your Home Screen.</p>
         <button class="quiet" id="btn-intro" style="align-self:flex-start;padding-left:0">Show the intro again</button>
       </section>
     </article>
@@ -356,6 +514,8 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 const EXAMPLES = /*__EXAMPLES__*/[];
 (() => {
 'use strict';
+// examples are built with fixed dates; move them by whole days so the latest one is from the last 24 hours
+{ const last = Math.max(...EXAMPLES.map(e => e.ts)), days = Math.floor((Date.now() - last) / 864e5); if (days > 0) for (const e of EXAMPLES) e.ts += days * 864e5; }
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (v, d = 0) => Number.isFinite(v) ? v.toFixed(d) : '–';
@@ -403,7 +563,7 @@ function packRaw(rec) {
 // a field guide travels inside every export, so any reader (or another Claude) can interpret it cold
 const EXPORT_ABOUT = {
   profile: 'optional, self-reported: age range and sex (null if not given). Use for context only, e.g. HRV norms fall with age.',
-  what: 'Sternum readings. The person lies on their back with an iPhone (no case) flat on the lower breastbone for 60-120 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest) and the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
+  what: 'Sternum readings. The person lies on their back with a phone (no case) flat on the lower breastbone for 60-120 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest; breathing tilts the phone). Readings from older versions may also include the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
   sessions: {
     id: 'unique reading id; keys raw data in "raw"', ts: 'start time, ms since 1970 (UTC)', source: 'live = recorded on the phone; simulated = synthetic demo',
     tags: 'context the person ticked (coffee, short sleep, ...)', note: 'free text', baseline: 'true if marked as part of their personal baseline',
@@ -423,8 +583,8 @@ const EXPORT_ABOUT = {
     breathPauseS: 'longest gap without breathing, s (0 = none over 12 s)', rsa: 'breath-linked heart rate swing: median max-min heart rate within a breath, bpm',
     s1s2: 'time from first to second heart sound, ms (approximates systole; null if heart sounds not heard)', s2s1: 'S2/S1 loudness ratio', beatAmp: 'peak-to-peak size of the average chest-motion beat (depends on phone placement)'
   },
-  raw: 'Raw recordings for the latest readings, keyed by session id. motion.t: seconds; ax, ay, az: acceleration without gravity, m/s²; gx, gy, gz: rotation rate °/s (iOS beta, gamma, alpha = around the phone x, y, z axes); tx, ty, tz: acceleration including gravity, m/s² (used for chest tilt). iOS delivers about 60 samples/s. audio: mono, sr samples/s, little-endian int16 in base64; multiply by scale/32767 for the original level.',
-  flags: 'The app flags (vs the person\'s baseline mean ± max(2 SD, a floor)): resting HR 8+ bpm above baseline or over 100; RMSSD below baseline range and under 70% of its mean; breathing 3+/min above baseline or over 20; irregPct >= 35 in a good-quality reading; 3+ early beats; beat gaps over 2 s; breathing pause >= 12 s; beat-shape match with baseline under 70%.',
+  raw: 'Raw recordings for the latest readings, keyed by session id. motion.t: seconds; ax, ay, az: acceleration without gravity, m/s²; gx, gy, gz: rotation rate °/s (iOS beta, gamma, alpha = around the phone x, y, z axes); tx, ty, tz: acceleration including gravity, m/s² (used for chest tilt). iOS delivers about 60 samples/s. audio (older readings only): mono, sr samples/s, little-endian int16 in base64; multiply by scale/32767 for the original level.',
+  flags: 'The app flags (vs the person\'s baseline mean ± max(2 SD, a floor); the first three good readings stand in until some are marked baseline): resting HR over 100 or under 40, or 8+ bpm above baseline; RMSSD below baseline range and under 70% of its mean; breathing 25+/min (see a doctor), or over 20 or 3+/min above baseline (watch); irregular rhythm when afLike is true in a good-quality reading (needs 40+ beats; irregPct alone is not used, because breathing swings raise it); 3+ early beats (8+ is stronger); beat gaps over 2 s; breathing pause of 12 s or more; beat-shape match with baseline under 70% (info only, usually phone position). Poor-quality readings raise no flags.',
   source: 'https://github.com/simbonk/sternum (src/analysis.js has the signal processing)'
 };
 function b64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
@@ -452,26 +612,26 @@ function renderTodos() {
   const track = $('#todo-track'); if (!track) return;
   const homeDone = standalone || todoDone('home');
   const cards = [
-    `<article class="todo">
-      <span class="todo-k">To do · always open</span>
-      <h3>Tell us how it went</h3>
-      <p class="small">A short, anonymous form about whether Sternum worked for you and what was confusing. Every question is optional. Please don't include your name, email, birth date or anything else that identifies you.</p>
-      ${FEEDBACK_URL ? `<a class="go todo-btn" href="${FEEDBACK_URL}" target="_blank" rel="noopener">Give feedback</a>` : '<button class="go todo-btn" disabled>Feedback form coming soon</button>'}
-      <p class="small muted">The form is a separate Google Form; your readings are never sent with it.</p>
-    </article>`,
     `<article class="todo${homeDone ? ' done' : ''}">
       <span class="todo-k">${homeDone ? 'Done ✓' : 'To do'}</span>
       <div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap"><img src="icons/icon-180.png" alt="Sternum icon" width="48" height="48" style="border-radius:11px;flex:none"><h3 style="margin:0">Add Sternum to your Home Screen</h3></div>
       <p class="small">${HOME_WHY}</p>
       <details><summary class="small"><b>Show the steps</b></summary><h4 class="small" style="margin:8px 0 0">iPhone</h4>${HOME_IOS}<h4 class="small" style="margin:8px 0 0">Android</h4>${HOME_ANDROID}<p class="small muted">${HOME_NOTE}</p></details>
       <div class="row"><button class="primary btn-install" hidden>Install</button>${homeDone ? (standalone ? '<span class="small muted">You opened Sternum from the Home Screen.</span>' : '<button class="quiet" data-undo="home">Mark as not done</button>') : '<button data-done="home">Mark as done</button>'}</div>
-    </article>`
-    ,`<article class="todo${loadProfile().age ? ' done' : ''}">
+    </article>`,
+    `<article class="todo${loadProfile().age ? ' done' : ''}">
       <span class="todo-k">${loadProfile().age ? 'Done ✓ · change any time' : 'To do · optional'}</span>
       <h3>Tell Sternum your age range</h3>
       <p class="small">Heart rate variability falls a lot with age, so this lets Sternum say what's typical for you before your own baseline builds up. Sex is optional and only fine-tunes the wording. Stored only on this phone.</p>
       <div class="about-you"><b class="small">About you (optional)</b><span class="small muted">Helps explain your numbers before you have a baseline. Stays on this phone.</span><div class="row" style="flex-wrap:nowrap;gap:8px"><select class="pf-age" aria-label="Age range"><option value="">Age range</option><option>Under 25</option><option>25–39</option><option>40–54</option><option>55–69</option><option>70+</option><option value="na">Prefer not to say</option></select><select class="pf-sex" aria-label="Sex"><option value="">Sex</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option><option value="na">Prefer not to say</option></select></div></div>
       <div class="row"><button data-save-profile>Save</button><span class="small muted" data-saved hidden>Saved</span></div>
+    </article>`,
+    `<article class="todo">
+      <span class="todo-k">To do · always open</span>
+      <h3>Tell us how it went</h3>
+      <p class="small">A short, anonymous form about whether Sternum worked for you and what was confusing. Every question is optional. Please don't include your name, email, birth date or anything else that identifies you.</p>
+      ${FEEDBACK_URL ? `<a class="go todo-btn" href="${FEEDBACK_URL}" target="_blank" rel="noopener">Give feedback</a>` : '<button class="go todo-btn" disabled>Feedback form coming soon</button>'}
+      <p class="small muted">The form is a separate Google Form; your readings are never sent with it.</p>
     </article>`
   ];
   track.innerHTML = cards.join('');
@@ -538,7 +698,7 @@ function flagsFor(s, B) {
       if (M.br >= 25) F.push(['see', `Breathing ${fmt(M.br, 1)} per minute at rest`, 'Fast breathing at rest. If you also feel short of breath or unwell, get medical advice.']);
       else if (M.br > 20 || (st.br && M.br > st.br.hi && M.br - st.br.mean >= 3)) F.push(['watch', `Breathing faster than usual (${fmt(M.br, 1)}/min)`, 'Can come with illness, fever or anxiety. Check it again later.']);
     }
-    if (M.breathPauseS >= 10) F.push(['watch', `Breathing paused for about ${fmt(M.breathPauseS)} s`, 'No chest movement for 10 s or more. Ignore it if you held your breath; repeated pauses during rest are worth mentioning to a doctor.']);
+    if (M.breathPauseS >= 12) F.push(['watch', `Breathing paused for about ${fmt(M.breathPauseS)} s`, 'No chest movement for 12 s or more. Ignore it if you held your breath; repeated pauses during rest are worth mentioning to a doctor.']);
     if (clean) {
       const irr = M.irregPct, baseIrr = st.irregPct?.mean;
       // newer readings test for random (atrial-fibrillation-like) irregularity; older ones only stored the jump percentage
@@ -598,7 +758,7 @@ function drawCharts() {
   }
 }
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawCharts, 150); });
-document.addEventListener('pointermove', e => {
+const showTip = e => {
   const el = e.target.closest?.('.plot'); document.querySelectorAll('.tip').forEach(t => { if (!el || t.parentElement !== el.parentElement) t.remove(); });
   if (!el || !el._hover) return;
   const svg = el.querySelector('svg'); if (!svg) return;
@@ -609,7 +769,9 @@ document.addEventListener('pointermove', e => {
   tip.innerHTML = best.html;
   const scale = box.width / svg.viewBox.baseVal.width;
   tip.style.left = (el.offsetLeft + best.x * scale) + 'px'; tip.style.top = (el.offsetTop + best.y * scale) + 'px';
-});
+};
+document.addEventListener('pointermove', showTip);
+document.addEventListener('pointerdown', showTip);
 document.addEventListener('pointerleave', () => document.querySelectorAll('.tip').forEach(t => t.remove()));
 
 /* ---------- views ---------- */
@@ -652,7 +814,7 @@ function plainEnglish(sess, B) {
   if (rw === 'Irregular') parts.push('The rhythm looked irregular, so take another reading and read the note below.');
   else if (rw === 'Mostly regular') parts.push(`The rhythm was regular apart from ${M.ectopic} early beats, which are usually harmless.`);
   else if (rw === 'Regular') parts.push(M.rsa >= 4 || M.irregPct > 10 ? 'The rhythm was regular, speeding up and slowing down with your breathing as a healthy heart does.' : 'The rhythm was steady and regular.');
-  if (Number.isFinite(br)) parts.push(`You took about ${fmt(br)} breaths a minute, ${br < 12 ? 'slow and relaxed' : br <= 20 ? 'a normal rate' : 'faster than usual for rest'}.`);
+  if (Number.isFinite(br)) parts.push(`You took about ${+br.toFixed(1)} breaths a minute, ${br < 12 ? 'slow and relaxed' : br <= 20 ? 'a normal rate' : 'faster than usual for rest'}.`);
   if (hvR === 'lower') parts.push('Your HRV was lower than usual, a sign your body may be under some strain today (poor sleep, alcohol, exercise or a coming illness).');
   else if (hvR === 'usual') parts.push('Your HRV was about your usual, so nothing suggests extra strain today.');
   else if (hvR === 'higher') parts.push('Your HRV was higher than usual, which usually means you are well rested.');
@@ -682,6 +844,7 @@ function renderResult(sess, unsaved) {
     </div>
     <p class="small muted">HRV is RMSSD: the typical change in milliseconds from one beat gap to the next. Breath swing is how many beats per minute your heart rate rises and falls within each breath.${Number.isFinite(M.s1s2) ? ` Heart-sound gap (S1 to S2, roughly how long each squeeze lasts): ${fmt(M.s1s2)} ms.` : ''}</p>
     <div class="flags">${flags.map(([lv, t, p]) => `<div class="flag ${lv}"><span class="ic">${lv === 'ok' ? '✓' : lv === 'info' ? 'i' : '!'}</span><div><b>${esc(t)}</b><p>${esc(p)}</p></div></div>`).join('')}</div>
+    <details class="more" id="more-detail"${moreOpen() ? ' open' : ''}><summary>Charts and details</summary><div class="more-in">
     <div class="charts">
       ${chartBox('c-ibi', 'Beat-to-beat intervals', 'Each dot is one beat; steady rhythm makes a smooth wave that follows your breathing', '', true)}
       ${sess.templates?.scg ? chartBox('c-scg', 'Average heartbeat (chest motion)', `${sess.templates.scgN || ''} beats averaged`, `<span style="color:var(--pulse)"><i></i>this reading</span>${B?.scg ? '<span style="color:var(--base)"><i></i>baseline</span>' : ''}`) : ''}
@@ -691,6 +854,7 @@ function renderResult(sess, unsaved) {
     </div>
     ${sess.notes?.length ? `<div class="banner warn">${sess.notes.map(esc).join(' ')}</div>` : ''}
     ${brNote || sess.soundNote ? `<p class="small muted">${esc([brNote, sess.soundNote].filter(Boolean).join('. '))}</p>` : ''}
+    </div></details>
     <div class="sep"></div>
     <div class="chips" id="tag-chips">${TAGS.map(t => `<button class="chip" aria-pressed="${(sess.tags || []).includes(t)}" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>
     <input type="text" id="note-in" placeholder="Note (optional)" value="${esc(sess.note || '')}" ${sess.example ? 'disabled' : ''}>
@@ -703,7 +867,8 @@ function renderResult(sess, unsaved) {
   const ibi = sess.ibi || [];
   const pts = []; let t = 0; ibi.forEach(v => { t += v / 1000; pts.push([t, v]); });
   S.charts['c-ibi'] = w => {
-    const r = plot({ w, h: 170, series: [{ pts, color: 'var(--pulse)', dots: true, r: 2.6, width: 1.5 }], xfmt: v => v + ' s', yfmt: v => v, label: 'Beat intervals in milliseconds over time' });
+    const vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), mid = (lo + hi) / 2, half = Math.max(75, (hi - lo) / 2 * 1.12);
+    const r = plot({ w, h: 170, series: [{ pts, color: 'var(--pulse)', dots: true, r: 2.6, width: 1.5 }], y: vs.length ? [mid - half, mid + half] : undefined, xfmt: v => v + ' s', yfmt: v => v, label: 'Beat intervals in milliseconds over time' });
     r.hover = pts.map((p, i) => ({ x: r.sx(p[0]), y: 20, html: `beat ${i + 2} · ${p[1]} ms · ${fmt(60000 / p[1])} bpm` }));
     return r;
   };
@@ -737,6 +902,7 @@ function renderResult(sess, unsaved) {
     return plot({ w, h: 170, series: [{ pts: pts2, color: 'var(--breath)' }], noY: true, left: 10, xfmt: v => v + ' s', label: 'Breathing trace' });
   };
   requestAnimationFrame(drawCharts);
+  $('#more-detail').ontoggle = e => { try { localStorage.setItem('sternum.more', e.target.open ? '1' : ''); } catch { } if (e.target.open) drawCharts(); };
 
   el.querySelectorAll('[data-tag]').forEach(b => b.onclick = () => {
     if (sess.example) return;
@@ -753,6 +919,7 @@ function renderResult(sess, unsaved) {
   };
   const close = $('#btn-close'); if (close) close.onclick = () => { el.hidden = true; S.current = null; $('#start-panel').hidden = false; };
 }
+function moreOpen() { try { return !!localStorage.getItem('sternum.more'); } catch { return false; } }
 function persist(sess) {
   sess.updatedAt = Date.now();
   const i = S.sessions.findIndex(s => s.id === sess.id);
@@ -769,13 +936,18 @@ function renderTrends() {
   S.charts = {};
   if (!list.length) { el.innerHTML = '<section class="panel"><h2>No readings yet</h2><p class="muted">Take a reading on the Record tab. Trends appear once you have two or more.</p></section>'; return; }
   const ex = !S.sessions.length;
-  const defs = [['hr', 'Resting heart rate'], ['rmssd', 'Heart rate variability (RMSSD)'], ['br', 'Breathing rate'], ['irregPct', 'Beat-to-beat jumps'], ['rsa', 'Breath-linked heart swing'], ['s1s2', 'S1–S2 interval'], ['shape', 'Beat shape match with baseline']];
+  const main = [['hr', 'Resting heart rate'], ['rmssd', 'Heart rate variability (RMSSD)'], ['br', 'Breathing rate'], ['rsa', 'Breath-linked heart swing']];
+  const extra = [['shape', 'Beat shape match with baseline'], ['irregPct', 'Beat-to-beat jumps']].concat(list.some(s => Number.isFinite(s.metrics?.s1s2)) ? [['s1s2', 'S1–S2 interval (older readings)']] : []);
+  const defs = main.concat(extra);
+  const sub = k => k === 'shape' ? 'Higher is closer to your baseline waveform; most changes come from phone position' : k === 'irregPct' ? '% of beats more than 12% longer or shorter than the one before. Breathing alone causes some, so the irregular-rhythm flag uses a different test.' : `${METRICS[k].unit}`;
   el.innerHTML = `<section class="panel">
     ${ex ? '<div class="banner">These are example readings so you can see the layout. They disappear when you save your first real reading.</div>' : ''}
     <div class="row" style="justify-content:space-between"><h2>Trends</h2><span class="small muted">${B ? `Baseline: ${B.base.length} reading${B.base.length > 1 ? 's' : ''}${B.auto ? ' (first good readings)' : ''}` : 'No baseline yet'}</span></div>
     <div class="legend"><span style="color:var(--breath)"><i style="height:8px;opacity:.35"></i>your usual range</span><span style="color:var(--pulse)"><i style="height:8px;width:8px;border-radius:50%"></i>reading</span><span style="color:var(--warn)"><i style="height:8px;width:8px;border-radius:50%"></i>outside range</span></div>
-    <div class="charts">${defs.map(([k, t]) => chartBox('t-' + k, t, k === 'shape' ? 'Higher is closer to your baseline waveform' : k === 'irregPct' ? '% of beats more than 12% longer or shorter than the one before. Breathing alone causes some.' : `${METRICS[k].unit}`)).join('')}</div>
+    <div class="charts">${main.map(([k, t]) => chartBox('t-' + k, t, sub(k))).join('')}</div>
+    <details class="more-charts" id="more-trends"><summary>More charts</summary><div class="charts">${extra.map(([k, t]) => chartBox('t-' + k, t, sub(k))).join('')}</div></details>
   </section>`;
+  $('#more-trends').ontoggle = e => { if (e.target.open) drawCharts(); };
   // readings are spaced evenly in the order taken; with several a day, a time-based axis bunches them up
   const oneDay = new Date(list[0].ts).toDateString() === new Date(list[list.length - 1].ts).toDateString();
   const lab = s => oneDay ? new Date(s.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : new Date(s.ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -862,7 +1034,7 @@ function setTab(t) {
   // going back to Record closes a reading opened from Sessions, so Start is always there; an unsaved new reading stays
   if (t === 'record' && S.current && (S.current.example || S.sessions.some(s => s.id === S.current.id)) && !S.opening) { $('#result-panel').hidden = true; S.current = null; $('#start-panel').hidden = false; }
   S.tab = t;
-  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  document.querySelectorAll('nav.tabs button').forEach(b => { b.setAttribute('aria-selected', b.dataset.tab === t); b.tabIndex = b.dataset.tab === t ? 0 : -1; });
   document.querySelectorAll('[data-view]').forEach(v => v.hidden = v.dataset.view !== t);
   try { localStorage.setItem('sternum.tab', t); } catch { }
   render();
@@ -874,6 +1046,12 @@ function render() {
   else if (S.tab === 'record' && S.current && !$('#result-panel').hidden) renderResult(S.current, !S.sessions.some(s => s.id === S.current.id) && !S.current.example);
 }
 document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+$('nav.tabs').addEventListener('keydown', e => {
+  const tabs = [...document.querySelectorAll('nav.tabs button')], i = tabs.findIndex(b => b.dataset.tab === S.tab);
+  const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+  if (j === undefined) return;
+  e.preventDefault(); const b = tabs[(j + tabs.length) % tabs.length]; setTab(b.dataset.tab); b.focus();
+});
 
 /* ---------- making a session ---------- */
 function newSession(res, source) {
@@ -899,11 +1077,10 @@ $('#btn-sim').onclick = () => {
   const k = $('#sim-kind').value, seed = 1 + Math.floor(Math.random() * 1000);
   const opt = { normal: { hr: 58 + Math.random() * 8 }, ectopic: { hr: 64, ectopic: true }, irregular: { hr: 76, irregular: true }, apnea: { hr: 60, br: 12, apnea: true } }[k];
   $('#btn-sim').disabled = true; $('#btn-sim').textContent = 'Analysing…';
-  setTimeout(() => { try { showAnalysis(DSP.simulate({ ...opt, seed }), 'simulated'); } finally { $('#btn-sim').disabled = false; $('#btn-sim').textContent = 'Run'; } }, 30);
+  setTimeout(() => { try { showAnalysis({ motion: DSP.simulate({ ...opt, seed, noise: 0.005 }).motion }, 'simulated'); } finally { $('#btn-sim').disabled = false; $('#btn-sim').textContent = 'Run'; } }, 30);
 };
 
 /* ---------- live recording ---------- */
-function blockMean(x, f) { if (f <= 1) return x; const n = Math.floor(x.length / f), y = new Float32Array(n); for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < f; k++) s += x[i * f + k]; y[i] = s / f; } return y; }
 // soft bell-like chimes: a sine with a few gentle overtones and a long, natural fade
 function chime(ac, notes, gap = 0.22, ring = 1.6) {
   if (!ac) return;
@@ -964,16 +1141,16 @@ $('#btn-live').onclick = async () => {
   const motionAsk = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function' ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : Promise.resolve('granted');
   $('#start-msg').hidden = true;
   const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), sensors: $('#live-sensors'), stop: $('#btn-stop'), dot: $('#breath-dot') };
-  ui.live.hidden = false; document.body.style.overflow = 'hidden';
+  ui.live.hidden = false; document.body.style.overflow = 'hidden'; $('#live-settle').hidden = false; $('#live-traces').hidden = true;
   ui.phase.textContent = 'Asking for sensor access'; ui.count.textContent = ''; ui.unit.textContent = ''; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
 
+  // chimes should sound even with the ring/silent switch on
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { }
   const motionPerm = await motionAsk;
-  let stream = null;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } }); } catch { }
 
-  const M = { t: [], ax: [], ay: [], az: [], gx: [], gy: [], gz: [], tx: [], ty: [], tz: [] }, chunks = [];
+  const M = { t: [], ax: [], ay: [], az: [], gx: [], gy: [], gz: [], tx: [], ty: [], tz: [] };
   const R = { t: [], gx: [], gy: [], az: [] };          // rolling 14 s for the live heart rate
-  const scope = [], breathHist = [], mic = [];
+  const scope = [], breathHist = [];
   let recording = false, t0 = 0, motionSeen = false, hasGyro = false, filt = null, fsEst = 60, lpT = null, slowT = null;
   const now = () => performance.now() / 1000;
   const onMotion = e => {
@@ -1000,16 +1177,6 @@ $('#btn-live').onclick = async () => {
     M.tx.push(g.x ?? 0); M.ty.push(g.y ?? 0); M.tz.push(g.z ?? 0);
   };
   addEventListener('devicemotion', onMotion);
-  let proc = null, src = null, sr = 44100;
-  if (stream && ac) {
-    sr = ac.sampleRate; src = ac.createMediaStreamSource(stream); proc = ac.createScriptProcessor(4096, 1, 1);
-    const mute = ac.createGain(); mute.gain.value = 0; src.connect(proc); proc.connect(mute); mute.connect(ac.destination);
-    proc.onaudioprocess = ev => {
-      const d = ev.inputBuffer.getChannelData(0); let s = 0; for (let i = 0; i < d.length; i++) s += d[i] * d[i];
-      mic.push(Math.sqrt(s / d.length)); if (mic.length > 70) mic.shift();
-      if (recording) chunks.push(new Float32Array(d));
-    };
-  }
 
   let done = false, mode = null;
   const finish = m => { mode = m; done = true; };
@@ -1017,21 +1184,19 @@ $('#btn-live').onclick = async () => {
   ui.stop.onclick = () => finish('stop');
   const cleanup = () => {
     removeEventListener('devicemotion', onMotion);
-    try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
-    stream && stream.getTracks().forEach(t => t.stop());
     setTimeout(() => { try { ac && ac.close(); } catch { } try { if (navigator.audioSession) navigator.audioSession.type = "auto"; } catch { } }, 2600);
     awake.stop(); ui.live.hidden = true; document.body.style.overflow = '';
   };
 
   await new Promise(r => setTimeout(r, 1200));
-  if (!motionSeen && !stream) {
+  if (!motionSeen) {
     cleanup();
     showStartMsg(motionPerm === 'denied'
-      ? 'Motion access was turned down. Close and reopen this page, tap Start again and choose Allow for motion and the microphone.'
-      : 'This browser did not give the page any motion or microphone data. Open it in Safari on your iPhone over https and allow access when asked.');
+      ? 'Motion access was turned down. Close and reopen this page, tap Start again and choose Allow.'
+      : 'This browser did not give the page any motion data. Open Sternum on your phone (Safari on iPhone, Chrome on Android) over https and allow motion access when asked.');
     return;
   }
-  ui.sensors.textContent = [motionSeen ? (hasGyro ? 'motion + gyro' : 'motion') : 'no motion', stream ? 'microphone' : 'no microphone'].join(' · ');
+  ui.sensors.textContent = hasGyro ? 'accelerometer + gyroscope' : 'accelerometer';
 
   const css = getComputedStyle(document.documentElement);
   const col = n => css.getPropertyValue(n).trim() || '#c2313b';
@@ -1060,12 +1225,12 @@ $('#btn-live').onclick = async () => {
       const tn = now();
       if (phase === 'settle') {
         const left = SETTLE - (tn - tStart);
-        ui.phase.textContent = 'Lie back and rest the phone on your breastbone';
+        ui.phase.textContent = 'Lie back, phone on your breastbone';
         ui.count.textContent = Math.max(1, Math.ceil(left)); ui.unit.textContent = 's to start';
-        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); }
+        if (left <= 0) { phase = 'rec'; recording = true; t0 = tn; chime(ac, START_CHIME, 0, 1.2); buzz(1); $('#live-settle').hidden = true; $('#live-traces').hidden = false; }
       } else {
         const el = tn - t0;
-        ui.phase.textContent = 'Recording. Breathe normally and stay still';
+        ui.phase.textContent = 'Recording. Breathe normally, keep still';
         ui.count.textContent = Math.max(0, Math.ceil(DUR - el)); ui.unit.textContent = 's left';
         ui.bar.style.width = Math.min(100, 100 * el / DUR) + '%';
         ui.stop.disabled = el < 20;
@@ -1078,7 +1243,7 @@ $('#btn-live').onclick = async () => {
         else { ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse, keep still'; }
       }
       drawTrace($('#scope-heart'), scope, col('--pulse'));
-      drawTrace($('#scope-mic'), mic, col('--breath'), true);
+      drawTrace($('#scope-breath'), breathHist, col('--breath'));
       if (breathHist.length > 10) {
         let lo = Infinity, hi = -Infinity; for (const v of breathHist) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
         const f = hi > lo ? (breathHist[breathHist.length - 1] - lo) / (hi - lo) : 0.5;
@@ -1090,19 +1255,14 @@ $('#btn-live').onclick = async () => {
   });
   const recorded = recording ? now() - t0 : 0;
   recording = false;
-  // while the microphone is live iOS plays sound quietly; release it first, then beep
-  try { proc && proc.disconnect(); src && src.disconnect(); } catch { }
-  stream && stream.getTracks().forEach(t => t.stop());
-  if (mode !== 'cancel') { try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { } await new Promise(r => setTimeout(r, 300)); chime(ac, END_CHIME); buzz(2); }
+  if (mode !== 'cancel') { chime(ac, END_CHIME); buzz(2); }
   cleanup(); ui.bar.style.width = '0';
   if (mode === 'cancel') return;
   if (recorded < 15) { showStartMsg('That reading was too short to analyse. Record at least 20 seconds.'); return; }
-  let audio = null;
-  if (chunks.length) { const n = chunks.reduce((a, c) => a + c.length, 0), all = new Float32Array(n); let o = 0; for (const c of chunks) { all.set(c, o); o += c.length; } const f = Math.max(1, Math.floor(sr / 4000)); audio = { samples: blockMean(all, f), sr: sr / f }; }
   const motion = M.t.length > 200 ? M : null;
   if (motion && !hasGyro) { delete motion.gx; delete motion.gy; delete motion.gz; }
   await new Promise(r => setTimeout(r, 30));
-  showAnalysis({ motion, audio }, 'live');
+  showAnalysis({ motion }, 'live');
 };
 
 /* ---------- start ---------- */
@@ -1118,8 +1278,22 @@ renderTodos();
 rawPrune();
 try { const t = localStorage.getItem('sternum.tab'); if (t && t !== 'record') setTab(t); } catch { }
 $('#example-note').hidden = S.sessions.length > 0;
-// open on a realistic working state: the latest reading (an example until you have your own)
-const latest = shown()[shown().length - 1];
-if (latest && S.tab === 'record') renderResult(latest, false);
+// open on your latest reading; until there is one, an example is a tap away
+if (S.sessions.length && S.tab === 'record') renderResult(S.sessions[S.sessions.length - 1], false);
+$('#btn-example').onclick = () => { renderResult(EXAMPLES[EXAMPLES.length - 1], false); $('#result-panel').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+
+// a computer has no motion sensors: point it at a phone instead, and leave the examples and simulations to explore
+if (!matchMedia('(pointer: coarse)').matches) {
+  $('#desk').hidden = false; $('.seg').hidden = true; $('#btn-live').hidden = true; $('details.sim').open = true;
+  if (/^https?:$/.test(location.protocol)) {
+    const sc = document.createElement('script'); sc.src = 'vendor/qrcode.js';
+    sc.onload = () => { try { const q = qrcode(0, 'M'); q.addData(location.origin + location.pathname); q.make(); $('#desk-qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); } catch { $('#desk-qr').hidden = true; } };
+    sc.onerror = () => { $('#desk-qr').hidden = true; };
+    document.head.appendChild(sc);
+  } else $('#desk-qr').hidden = true;
+}
+
+// works offline once visited (see sw.js)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { }));
 })();
 </script>

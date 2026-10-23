@@ -1,0 +1,10 @@
+{
+  "name": "sternum",
+  "private": true,
+  "description": "Phone-on-chest heart and breathing log",
+  "license": "MIT",
+  "scripts": {
+    "bundle": "node build.js",
+    "test": "node test/test.js"
+  }
+}

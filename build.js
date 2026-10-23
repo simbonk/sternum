@@ -10,9 +10,9 @@ const plan = [
   [-5, { hr: 61, br: 13, seed: 107 }, ['Morning'], false], [-3, { hr: 64, ectopic: true, br: 13, seed: 108 }, ['Morning', 'Short sleep'], false], [-2, { hr: 60, br: 12, seed: 109 }, ['Morning'], false],
   [-1, { hr: 72, br: 16.5, rsa: 1.5, seed: 110 }, ['Morning', 'Feeling unwell'], false]];
 const examples = plan.map(([d, o, tags, b], i) => {
-  const r = D.analyze(D.simulate(o)), keep = i >= plan.length - 3;
+  const r = D.analyze({ motion: D.simulate({ noise: 0.005, ...o }).motion }), keep = i >= plan.length - 3;
   return { id: 'ex' + i, ts: now + d * day - 6 * 3600e3 + i * 7e5, source: 'example', example: true, tags, note: '', baseline: b,
-    durationS: r.durationS, metrics: r.metrics, quality: r.quality, hrSource: r.hrSource, agree: r.agree, notes: r.notes, ibi: r.ibi, traces: keep ? r.traces : {}, templates: r.templates };
+    durationS: r.durationS, metrics: r.metrics, quality: r.quality, hrSource: r.hrSource, agree: r.agree, notes: r.notes, ibi: r.ibi, traces: keep ? r.traces : {}, templates: r.templates, soundNote: r.soundNote };
 });
 
 const dsp = fs.readFileSync('src/analysis.js', 'utf8').replace("if (typeof module !== 'undefined') module.exports = DSP;", '');
