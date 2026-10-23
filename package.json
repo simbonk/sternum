@@ -4,7 +4,7 @@
   "description": "Phone-on-chest heart and breathing log",
   "license": "MIT",
   "scripts": {
-    "build": "node build.js",
+    "bundle": "node build.js",
     "test": "node test/test.js"
   }
 }

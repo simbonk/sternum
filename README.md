@@ -52,7 +52,7 @@ Tap **Start reading** and allow motion access. You get a 10-second countdown to 
 No build step is needed on the host: `index.html` is committed. On Vercel, import the repo with framework preset "Other" and no build command.
 
 ```
-npm run build   # inlines src/ into index.html
+npm run bundle  # inlines src/ into index.html (not "build", so Vercel serves the repo as is)
 npm test        # runs the analysis on simulated recordings and checks the results
 ```
 
