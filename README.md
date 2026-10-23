@@ -8,7 +8,7 @@ Sternum is a web app that turns a phone's motion sensors into a heart and breath
 
 <p>
   <img src="docs/record.png" width="200" alt="Record screen">
-  <img src="docs/warning.png" width="200" alt="Safety note shown alone for three seconds">
+  <img src="docs/warning.png" width="200" alt="Safety note with an I understand button">
   <img src="docs/countdown.png" width="200" alt="Countdown screen with the placement diagram">
   <img src="docs/recording.png" width="200" alt="Recording screen with a tall countdown and heart rate">
   <img src="docs/reading.png" width="200" alt="A reading explained in plain English">
@@ -46,7 +46,7 @@ Add it to the Home Screen. Safari deletes a website's data if you don't visit fo
 
 ## How a reading works
 
-Tap **Start reading** and allow motion access. A safety note shows on its own for 3 seconds, then a 10-second countdown to get into position, with a diagram of where the phone goes. Then a chime, and the recording (60 s, 90 s or 2 min) with a live pulse and chest motion view. During the recording the time left and heart rate are drawn tall and narrow, so they stay legible when you glance down the phone from your chin. A rising three-note chime means it's done, and the screen stays awake throughout.
+Tap **Start reading** and allow motion access. A safety note comes first; tap **I understand** and you get a 10-second countdown to get into position, with a diagram of where the phone goes. Then a chime, and the recording (60 s, 90 s or 2 min) with a live pulse and chest motion view. During the recording the time left and heart rate are drawn tall and narrow, so they stay legible when you glance down the phone from your chin. A rising three-note chime means it's done, and the screen stays awake throughout.
 
 ## Developing
 

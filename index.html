@@ -161,6 +161,7 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .warn-card { border: 2px solid var(--alert); border-radius: 16px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, var(--alert) 7%, var(--bg)) }
 .warn-card b { color: var(--alert); font: 700 1.5rem/1.15 var(--display) }
 .warn-card p { margin: 0; font-size: 1.05rem }
+.warn-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; margin-top: 8px }
 .settle-top { display: flex; justify-content: space-between; align-items: center; gap: 12px }
 .settle-top h2 { margin: 0 }
 .settle-top p { margin: 2px 0 0 }
@@ -316,6 +317,7 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
           <b>A curiosity, not a medical device</b>
           <p>Sternum can be wrong, and a normal result never rules anything out.</p>
           <p>If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading. Call emergency services or see a doctor.</p>
+          <div class="warn-actions"><button class="big-quiet" id="btn-warn-cancel">Cancel</button><button class="go" id="btn-warn-ok">I understand</button></div>
         </div>
       </div>
       <div id="live-settle" class="live-settle" hidden>
@@ -1693,7 +1695,7 @@ $('#btn-live').onclick = async () => {
   const motionAsk = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function' ? DeviceMotionEvent.requestPermission().catch(() => 'denied') : Promise.resolve('granted');
   $('#start-msg').hidden = true;
   const ui = { live: $('#live'), phase: $('#live-phase'), count: $('#live-count'), unit: $('#live-unit'), bar: $('#live-bar'), bpm: $('#live-bpm'), bpmNote: $('#live-bpm-note'), settleCount: $('#settle-count'), stop: $('#btn-stop') };
-  const tShown = performance.now(), show = id => ['#live-warn', '#live-settle', '#live-rec'].forEach(k => $(k).hidden = k !== id);
+  const show = id => ['#live-warn', '#live-settle', '#live-rec'].forEach(k => $(k).hidden = k !== id);
   ui.live.hidden = false; document.body.style.overflow = 'hidden'; show('#live-warn'); $('#live-actions').hidden = true; ui.stop.hidden = true;
   ui.settleCount.textContent = '10'; ui.bpm.textContent = '--'; ui.bpmNote.textContent = 'finding your pulse'; ui.bar.style.width = '0'; ui.stop.disabled = true;
 
@@ -1742,8 +1744,9 @@ $('#btn-live').onclick = async () => {
       : 'This browser did not give the page any motion data. Open Sternum on your phone (Safari on iPhone, Chrome on Android) over https and allow motion access when asked.');
     return;
   }
-  // the safety note gets the screen to itself for 3 s
-  await new Promise(r => setTimeout(r, Math.max(0, 3000 - (performance.now() - tShown))));
+  // the safety note stays up until it's acknowledged
+  const ok = await new Promise(r => { $('#btn-warn-ok').onclick = () => r(true); $('#btn-warn-cancel').onclick = () => r(false); });
+  if (!ok) { cleanup(); return; }
   show('#live-settle'); $('#live-actions').hidden = false;
 
   const css = getComputedStyle(document.documentElement);
