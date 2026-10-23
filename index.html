@@ -125,9 +125,6 @@ label.check { display: flex; gap: 8px; align-items: center; font-size: .9rem }
 .start { gap: 16px }
 .steps { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; color: var(--muted) }
 .steps b { color: var(--ink) }
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--soft); border-radius: 12px; padding: 4px; gap: 4px }
-.seg button { border: 0; background: none; color: var(--muted); font: 600 1.05rem var(--mono); padding: 12px 4px; border-radius: 9px; min-height: 52px }
-.seg button[aria-checked="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1) }
 button.go, a.go { box-sizing: border-box; border: 1px solid var(--pulse); background: var(--pulse); border-color: var(--pulse); color: #fff; font: 700 1.35rem var(--display); min-height: 76px; border-radius: 18px; width: 100% }
 button.go:disabled { opacity: .55 }
 button.big-quiet { min-height: 76px; border-radius: 18px; font: 600 1.15rem var(--body); width: 100% }
@@ -184,9 +181,6 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .about-you { display: flex; flex-direction: column; gap: 6px }
 .about-you select { min-height: 44px; min-width: 0; flex: 1 1 0 }
 .todos, .todo-track, main.wrap, .panel { min-width: 0; max-width: 100% }
-.danger { border-radius: 12px; padding: 14px 16px; background: var(--alert-bg); border-left: 5px solid var(--alert); display: flex; flex-direction: column; gap: 6px }
-.danger b { font-size: 1.05rem; color: var(--alert) }
-.danger p { margin: 0; font-size: .92rem; line-height: 1.5 }
 .todos { display: flex; flex-direction: column; gap: 8px }
 .todo-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch }
 .todo-track::-webkit-scrollbar { display: none }
@@ -218,8 +212,6 @@ figcaption { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase
 .lead { font-size: 1.08rem; line-height: 1.5 }
 .welcome .brandline { display: flex; align-items: center; gap: 10px; font: 700 1.1rem var(--display) }
 .welcome .brandline img { width: 40px; height: 40px; border-radius: 10px }
-.disclaimer { font-size: .84rem; color: var(--muted); border-left: 3px solid var(--alert); padding: 2px 0 2px 10px; max-width: 65ch }
-.disclaimer b { color: var(--ink); font-weight: 600 }
 .pose { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px 6px }
 .pose svg { display: block; width: 100%; height: auto; max-width: 480px; margin: 0 auto; overflow: visible }
 .pose text { font-family: var(--body) }
@@ -275,11 +267,7 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
         <div class="qr" id="desk-qr" aria-label="QR code that opens this page"></div>
         <div><b>Sternum records on a phone</b><p class="small muted">It reads your heart from your phone's motion sensors, which a computer doesn't have. Scan this with your phone's camera to open Sternum there. Meanwhile, look at the example reading or run a simulated one below.</p></div>
       </div>
-      <div class="seg" role="radiogroup" aria-label="Reading length">
-        <button role="radio" data-dur="60" aria-checked="true">60 s</button><button role="radio" data-dur="90" aria-checked="false">90 s</button><button role="radio" data-dur="120" aria-checked="false">2 min</button>
-      </div>
       <button class="go" id="btn-live">Start reading</button>
-      <p class="disclaimer"><b>A curiosity, not a medical device.</b> If you have chest pain, faint, are badly short of breath, or your heart is racing and won't settle, don't take a reading: call emergency services or see a doctor.</p>
       <div id="example-note" class="example-card" hidden><span>New here? Trends and Sessions show example readings until you save your own.</span><button id="btn-example">See an example reading</button></div>
       <div id="start-msg" class="banner warn" hidden></div>
       <details class="sim">
@@ -384,18 +372,13 @@ details.more[open] > summary, details.more-charts[open] > summary { margin-botto
   <main id="view-sessions" class="wrap" role="tabpanel" aria-labelledby="tab-sessions" data-view="sessions" hidden></main>
   <main id="view-guide" class="wrap" role="tabpanel" aria-labelledby="tab-guide" data-view="guide" hidden>
     <article class="panel guide">
-        <div class="danger" role="note">
-          <b>Get help now, don't take a reading</b>
-          <p>Chest pain, fainting, severe breathlessness, or a racing heart that won't settle: call emergency services or see a doctor.</p>
-          <p>Sternum is not a medical device. It can't diagnose anything, and it may not notice a condition you already have, such as atrial fibrillation, a pacemaker rhythm or a valve problem. A "normal" result never rules one out. If irregular rhythm keeps showing up, check it with an ECG (Apple Watch ECG app, KardiaMobile, or your doctor).</p>
-        </div>
         <section>
           <h2>How to take a good reading</h2>
           <ol>
             <li>Same time each day, ideally soon after waking, before coffee. Lie flat on your back on a bed, with one thin pillow at most, and rest for 2 to 3 minutes before you tap Start, so your heart rate settles.</li>
             <li>Take the phone out of its case and lay it screen up, flat and lengthwise along the lower half of your breastbone (the flat bone in the middle of your chest), with its bottom edge toward your chin. Then a glance down shows the countdown and your heart rate the right way up.</li>
             <li>Arms by your sides. Breathe normally, don't talk, keep still. Do Not Disturb stops a buzz from spoiling the reading.</li>
-            <li>Tap Start, settle during the 10-second countdown, and stay still until the closing chime. 60 seconds is enough; 2 minutes gives steadier HRV.</li>
+            <li>Tap Start, settle during the 10-second countdown, and stay still until the closing chime.</li>
             <li>Tag anything unusual (coffee, alcohol, short sleep, workout, feeling unwell). Tags explain outliers later.</li>
             <li>Mark 3–5 calm, typical mornings as your baseline. Until you do, the first three good readings are used.</li>
           </ol>
@@ -1117,7 +1100,7 @@ function packRaw(rec) {
 // a field guide travels inside every export, so any reader (or another Claude) can interpret it cold
 const EXPORT_ABOUT = {
   profile: 'optional, self-reported: age range and sex (null if not given). Use for context only, e.g. HRV norms fall with age.',
-  what: 'Sternum readings. The person lies on their back with a phone (no case) flat on the lower breastbone for 60-120 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest; breathing tilts the phone). Readings from older versions may also include the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
+  what: 'Sternum readings. The person lies on their back with a phone (no case) flat on the lower breastbone for 60 s. The page records the accelerometer and gyroscope (seismo- and gyrocardiography: each heartbeat jolts and rocks the chest; breathing tilts the phone). Readings from older versions may also include the microphone (breath sounds; heart sounds only if audible). Wellness tracking, not a medical device.',
   sessions: {
     id: 'unique reading id; keys raw data in "raw"', ts: 'start time, ms since 1970 (UTC)', source: 'live = recorded on the phone; simulated = synthetic demo',
     tags: 'context the person ticked (coffee, short sleep, ...)', note: 'free text', baseline: 'true if marked as part of their personal baseline',
@@ -1684,9 +1667,7 @@ function bqCo(type, f0, fs) {
 }
 function bqStream(co) { let x1 = 0, x2 = 0, y1 = 0, y2 = 0; return x => { const y = co[0] * x + co[1] * x1 + co[2] * x2 - co[3] * y1 - co[4] * y2; x2 = x1; x1 = x; y2 = y1; y1 = y; return y; }; }
 
-let DUR = 60;
-document.querySelectorAll('.seg [data-dur]').forEach(b => b.onclick = () => { DUR = +b.dataset.dur; document.querySelectorAll('.seg [data-dur]').forEach(x => x.setAttribute('aria-checked', x === b)); try { localStorage.setItem('sternum.dur', DUR); } catch { } });
-try { const d = +localStorage.getItem('sternum.dur'); if ([60, 90, 120].includes(d)) document.querySelector(`.seg [data-dur="${d}"]`).click(); } catch { }
+const DUR = 60;
 
 $('#btn-live').onclick = async () => {
   // everything that needs the tap itself happens before the first await
@@ -1830,7 +1811,7 @@ $('#btn-example').onclick = () => { renderResult(EXAMPLES[EXAMPLES.length - 1], 
 
 // a computer has no motion sensors: point it at a phone instead, and leave the examples and simulations to explore
 if (!matchMedia('(pointer: coarse)').matches) {
-  $('#desk').hidden = false; $('.seg').hidden = true; $('#btn-live').hidden = true; $('details.sim').open = true;
+  $('#desk').hidden = false; $('#btn-live').hidden = true; $('details.sim').open = true;
   if (/^https?:$/.test(location.protocol)) {
     const sc = document.createElement('script'); sc.src = 'vendor/qrcode.js';
     sc.onload = () => { try { const q = qrcode(0, 'M'); q.addData(location.origin + location.pathname); q.make(); $('#desk-qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); } catch { $('#desk-qr').hidden = true; } };

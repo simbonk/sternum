@@ -46,7 +46,7 @@ Add it to the Home Screen. Safari deletes a website's data if you don't visit fo
 
 ## How a reading works
 
-Tap **Start reading** and allow motion access. A safety note comes first; tap **I understand** and you get a 10-second countdown to get into position, with a diagram of where the phone goes. Then a chime, and the recording (60 s, 90 s or 2 min) with a live pulse and chest motion view. During the recording the time left and heart rate are drawn tall and narrow, so they stay legible when you glance down the phone from your chin. A rising three-note chime means it's done, and the screen stays awake throughout.
+Tap **Start reading** and allow motion access. A safety note comes first; tap **I understand** and you get a 10-second countdown to get into position, with a diagram of where the phone goes. Then a chime, and the 60-second recording with a live pulse and chest motion view. During the recording the time left and heart rate are drawn tall and narrow, so they stay legible when you glance down the phone from your chin. A rising three-note chime means it's done, and the screen stays awake throughout.
 
 ## Developing
 
